@@ -29,4 +29,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relasi dengan Penilaian
+    public function penilaian()
+    {
+        return $this->hasMany(Penilaian::class, 'id_user');
+    }
 }
