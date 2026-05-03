@@ -3,28 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Penilaian extends Model
 {
-    //
-    protected $primaryKey = 'id_penilaian';
-    protected $fillable = ['id_user', 'periode', 'tanggal_penilaian'];
+    // digunakan untuk menentukan kolom mana saja yang bisa diisi secara massal
+    protected $fillable = [
+        'user_id',
+        'periode',
+        'tanggal_penilaian'
+    ];
 
-    // Relasi dengan User
-    public function user()
+    protected $casts = [
+        'tanggal_penilaian' => 'date',
+    ];
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id_user');
+        return $this->belongsTo(User::class);
     }
 
-    // Relasi dengan DetailPenilaian
-    public function detail()
+    public function detail(): HasMany
     {
-        return $this->hasMany(DetailPenilaian::class, 'id_penilaian');
+        return $this->hasMany(DetailPenilaian::class);
     }
 
-    // Relasi dengan HasilSaw
-    public function hasil()
+    public function hasil(): HasMany
     {
-        return $this->hasMany(HasilSaw::class, 'id_penilaian');
+        return $this->hasMany(HasilSaw::class);
     }
 }

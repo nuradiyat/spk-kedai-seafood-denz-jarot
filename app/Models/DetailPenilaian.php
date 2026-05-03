@@ -3,28 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailPenilaian extends Model
 {
-    //
-    protected $primaryKey = 'id_detail';
-    protected $fillable = ['id_penilaian', 'id_karyawan', 'id_kriteria', 'nilai'];
+    
+    // digunakan untuk menentukan kolom mana saja yang bisa diisi secara massal
+    protected $fillable = [
+        'penilaian_id',
+        'karyawan_id',
+        'kriteria_id',
+        'nilai'
+    ];
 
-    // Relasi dengan Penilaian
-    public function penilaian()
+    public function penilaian(): BelongsTo
     {
-        return $this->belongsTo(Penilaian::class, 'id_penilaian');
+        return $this->belongsTo(Penilaian::class);
     }
 
-    // Relasi dengan Karyawan
-    public function karyawan()
+    public function karyawan(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'id_karyawan');
+        return $this->belongsTo(Karyawan::class);
     }
 
-    // Relasi dengan Kriteria
-    public function kriteria()
+    public function kriteria(): BelongsTo
     {
-        return $this->belongsTo(Kriteria::class, 'id_kriteria');
+        return $this->belongsTo(Kriteria::class);
     }
 }

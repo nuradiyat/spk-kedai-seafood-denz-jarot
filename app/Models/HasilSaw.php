@@ -3,29 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HasilSaw extends Model
 {
-    //
-    protected $table = 'hasil_saw';
-    protected $primaryKey = 'id_hasil';
-    protected $fillable = ['id_penilaian', 'id_karyawan', 'nilai_akhir', 'ranking', 'status_bonus'];
+    // di sini kita akan menyimpan hasil perhitungan SAW untuk setiap karyawan pada setiap penilaian
+    protected $fillable = [
+        'penilaian_id',
+        'karyawan_id',
+        'nilai_akhir',
+        'ranking',
+        'status_bonus'
+    ];
 
-    // Relasi dengan Penilaian
-    public function penilaian()
+    public function penilaian(): BelongsTo
     {
-        return $this->belongsTo(Penilaian::class, 'id_penilaian');
+        return $this->belongsTo(Penilaian::class);
     }
 
-    // Relasi dengan Karyawan
-    public function karyawan()
+    public function karyawan(): BelongsTo
     {
-        return $this->belongsTo(Karyawan::class, 'id_karyawan');
-    }
-
-    // Relasi dengan RiwayatPenilaian
-    public function riwayat()
-    {
-        return $this->hasMany(RiwayatPenilaian::class, 'id_hasil');
+        return $this->belongsTo(Karyawan::class);
     }
 }

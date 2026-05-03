@@ -7,14 +7,8 @@ use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
 use App\Http\Controllers\RiwayatPenilaianController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 /*
-|--------------------------------------------------------------------------
-| 🔓 ROUTE PUBLIK (LOGIN)
-|--------------------------------------------------------------------------
+🔓 ROUTE PUBLIK (LOGIN)
 */
 
 // halaman login
@@ -22,59 +16,53 @@ Route::get('/', function () {
     return view('auth.login');
 })->name('login');
 
-// proses login (nanti kamu buat controllernya)
+// proses login
 Route::post('/login', function () {
-    // logic login nanti
+    // nanti logic login
 })->name('login.process');
 
+
 /*
-|--------------------------------------------------------------------------
-| 🔐 ROUTE AUTH (HARUS LOGIN)
-|--------------------------------------------------------------------------
+🔐 ROUTE AUTH (HARUS LOGIN)
 */
 
 Route::middleware(['auth'])->group(function () {
 
     /*
-    |--------------------------------------------------------------------------
-    | 👤 ROLE ADMIN
-    |--------------------------------------------------------------------------
+    👤 ROLE ADMIN
     */
     Route::middleware(['role:admin'])->group(function () {
 
-        // 📌 CRUD Karyawan
+        // CRUD Karyawan
         Route::resource('karyawan', KaryawanController::class);
 
-        // 📌 CRUD Kriteria
+        // CRUD Kriteria (tanpa create & edit page)
         Route::resource('kriteria', KriteriaController::class)->except(['create', 'edit', 'show']);
 
-        // 📌 Penilaian
-        Route::get('/penilaian', [PenilaianController::class, 'index'])->name('penilaian.index');
-        Route::get('/penilaian/create', [PenilaianController::class, 'create'])->name('penilaian.create');
-        Route::post('/penilaian/store', [PenilaianController::class, 'store'])->name('penilaian.store');
+        // Penilaian
+        Route::resource('penilaian', PenilaianController::class)->only(['index', 'create', 'store']);
 
-        // 📌 Proses SAW
-        Route::get('/saw/proses/{id}', [HasilSawController::class, 'proses'])->name('saw.proses');
+        // Proses SAW
+        Route::get('/hasil/proses/{id}', [HasilSawController::class, 'proses'])->name('hasil.proses');
     });
 
     /*
-    |--------------------------------------------------------------------------
-    | 👑 ROLE OWNER
-    |--------------------------------------------------------------------------
+    👑 ROLE OWNER
     */
     Route::middleware(['role:owner'])->group(function () {
 
-        // 📌 Lihat hasil ranking
+        // Hasil SAW
         Route::get('/hasil', [HasilSawController::class, 'index'])->name('hasil.index');
 
-        // 📌 Riwayat penilaian
+        // Detail perhitungan (WAJIB ADA ID)
+        Route::get('/hasil/detail/{id}', [HasilSawController::class, 'detail'])->name('hasil.detail');
+
+        // Riwayat
         Route::get('/riwayat', [RiwayatPenilaianController::class, 'index'])->name('riwayat.index');
     });
 
     /*
-    |--------------------------------------------------------------------------
-    | 🔓 LOGOUT
-    |--------------------------------------------------------------------------
+    🔓 LOGOUT
     */
     Route::post('/logout', function () {
         auth()->logout();

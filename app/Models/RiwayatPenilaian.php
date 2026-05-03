@@ -3,15 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RiwayatPenilaian extends Model
 {
-    //
-    protected $primaryKey = 'id_riwayat';
-    protected $fillable = ['id_hasil', 'periode', 'tanggal', 'keterangan'];
+    // digunakan untuk menentukan kolom mana saja yang bisa diisi secara massal
+    protected $fillable = [
+        'hasil_saw_id',
+        'periode',
+        'tanggal',
+        'keterangan'
+    ];
 
-    public function hasil()
+    protected $casts = [
+        'tanggal' => 'date',
+    ];
+
+    public function hasil(): BelongsTo
     {
-        return $this->belongsTo(HasilSaw::class, 'id_hasil');
+        return $this->belongsTo(HasilSaw::class);
     }
 }

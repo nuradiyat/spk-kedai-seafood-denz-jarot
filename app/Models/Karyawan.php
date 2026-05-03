@@ -3,22 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Karyawan extends Model
 {
-    //
-    protected $primaryKey = 'id_karyawan';
-    protected $fillable = ['nama_karyawan', 'jabatan', 'tanggal_masuk', 'status'];
+    // disini kita tentukan kolom mana saja yang bisa diisi secara massal
+    protected $fillable = [
+        'nama_karyawan',
+        'jabatan',
+        'tanggal_masuk',
+        'status'
+    ];
 
-    // Relasi dengan DetailPenilaian
-    public function detailPenilaian()
+    public function detailPenilaian(): HasMany
     {
-        return $this->hasMany(DetailPenilaian::class, 'id_karyawan');
+        return $this->hasMany(DetailPenilaian::class);
     }
 
-    // Relasi dengan HasilSaw
-    public function hasilSaw()
+    public function hasilSaw(): HasMany
     {
-        return $this->hasMany(HasilSaw::class, 'id_karyawan');
+        return $this->hasMany(HasilSaw::class);
     }
 }
