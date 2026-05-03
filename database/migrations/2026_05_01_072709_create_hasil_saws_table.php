@@ -13,12 +13,8 @@ return new class extends Migration
     {
         Schema::create('hasil_saws', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_penilaian')
-                ->constrained('penilaians')
-                ->cascadeOnDelete();
-            $table->foreignId('id_karyawan')
-                ->constrained('karyawans')
-                ->cascadeOnDelete();
+            $table->foreignId('penilaian_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('karyawan_id')->constrained()->cascadeOnDelete();
             $table->float('nilai_akhir');
             $table->integer('ranking');
             $table->string('status_bonus');

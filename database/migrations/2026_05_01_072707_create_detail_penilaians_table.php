@@ -13,15 +13,9 @@ return new class extends Migration
     {
         Schema::create('detail_penilaians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_penilaian')
-                ->constrained('penilaians')
-                ->cascadeOnDelete();
-            $table->foreignId('id_karyawan')
-                ->constrained('karyawans')
-                ->cascadeOnDelete();
-            $table->foreignId('id_kriteria')
-                ->constrained('kriterias')
-                ->cascadeOnDelete();
+            $table->foreignId('penilaian_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('karyawan_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('kriteria_id')->constrained()->cascadeOnDelete();
             $table->float('nilai');
             $table->timestamps();
         });

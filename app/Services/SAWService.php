@@ -56,11 +56,11 @@ class SAWService
 
                 $nilai = DetailPenilaian::where([
                     'id_penilaian' => $id_penilaian,
-                    'id_karyawan' => $k->id_karyawan,
-                    'id_kriteria' => $kr->id_kriteria
+                    'id_karyawan' => $k->id,
+                    'id_kriteria' => $kr->id
                 ])->value('nilai');
 
-                $matrix[$k->id_karyawan][$kr->id_kriteria] = $nilai ?? 0;
+                $matrix[$k->id][$kr->id] = $nilai ?? 0;
             }
         }
 
@@ -71,10 +71,10 @@ class SAWService
         $min = [];
 
         foreach ($kriteria as $kr) {
-            $values = array_column($matrix, $kr->id_kriteria);
+            $values = array_column($matrix, $kr->id);
 
-            $max[$kr->id_kriteria] = max($values);
-            $min[$kr->id_kriteria] = min($values);
+            $max[$kr->id] = max($values);
+            $min[$kr->id] = min($values);
         }
 
         // ========================
@@ -85,14 +85,14 @@ class SAWService
         foreach ($kriteria as $kr) {
             foreach ($karyawan as $k) {
 
-                $value = $matrix[$k->id_karyawan][$kr->id_kriteria];
+                $value = $matrix[$k->id][$kr->id];
 
                 if ($kr->jenis == 'benefit') {
-                    $normalisasi[$k->id_karyawan][$kr->id_kriteria] =
-                        $value / ($max[$kr->id_kriteria] ?: 1);
+                    $normalisasi[$k->id][$kr->id] =
+                        $value / ($max[$kr->id] ?: 1);
                 } else {
-                    $normalisasi[$k->id_karyawan][$kr->id_kriteria] =
-                        ($min[$kr->id_kriteria] ?: 1) / ($value ?: 1);
+                    $normalisasi[$k->id][$kr->id] =
+                        ($min[$kr->id] ?: 1) / ($value ?: 1);
                 }
             }
         }
@@ -102,7 +102,7 @@ class SAWService
         // ========================
         $bobot = [];
         foreach ($kriteria as $kr) {
-            $bobot[$kr->id_kriteria] = $kr->bobot;
+            $bobot[$kr->id] = $kr->bobot;
         }
 
         // ========================
@@ -113,8 +113,8 @@ class SAWService
         foreach ($karyawan as $k) {
             foreach ($kriteria as $kr) {
 
-                $terbobot[$k->id_karyawan][$kr->id_kriteria] =
-                    $normalisasi[$k->id_karyawan][$kr->id_kriteria] * $kr->bobot;
+                $terbobot[$k->id][$kr->id] =
+                    $normalisasi[$k->id][$kr->id] * $kr->bobot;
             }
         }
 
@@ -124,15 +124,14 @@ class SAWService
         $nilaiAkhir = [];
 
         foreach ($karyawan as $k) {
-            $total = array_sum($terbobot[$k->id_karyawan]);
-            $nilaiAkhir[$k->id_karyawan] = $total;
+            $total = array_sum($terbobot[$k->id]);
+            $nilaiAkhir[$k->id] = $total;
         }
 
         // ========================
         // 7. RANKING
         // ========================
         arsort($nilaiAkhir);
-        $ranking = $nilaiAkhir;
 
         return [
             'karyawan'     => $karyawan,
@@ -144,7 +143,7 @@ class SAWService
             'bobot'        => $bobot,
             'terbobot'     => $terbobot,
             'nilai_akhir'  => $nilaiAkhir,
-            'ranking'      => $ranking,
+            'ranking'      => $nilaiAkhir,
         ];
     }
 }

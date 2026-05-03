@@ -12,15 +12,13 @@ class KaryawanController extends Controller
      */
     public function index()
     {
-        // Ambil semua data karyawan dari database
-        $karyawans = Karyawan::all();
+        $karyawans = Karyawan::latest()->get();
 
-        // Kirim ke view
         return view('karyawan.index', compact('karyawans'));
     }
 
     /**
-     * 📌 Menampilkan form tambah karyawan
+     * 📌 Form tambah karyawan
      */
     public function create()
     {
@@ -28,54 +26,67 @@ class KaryawanController extends Controller
     }
 
     /**
-     * 📌 Menyimpan data karyawan baru
+     * 📌 Simpan data karyawan
      */
     public function store(Request $request)
     {
-        // Validasi input
-        $request->validate([
-            'nama_karyawan' => 'required'
+        $validated = $request->validate([
+            'nama_karyawan' => 'required|string|max:255',
+            'jabatan'       => 'nullable|string|max:255',
+            'tanggal_masuk' => 'nullable|date',
+            'status'        => 'required|in:aktif,nonaktif',
         ]);
 
-        // Simpan ke database
-        Karyawan::create([
-            'nama_karyawan' => $request->nama_karyawan
-        ]);
+        Karyawan::create($validated);
 
-        return redirect()->route('karyawan.index');
+        return redirect()
+            ->route('karyawan.index')
+            ->with('success', 'Data karyawan berhasil ditambahkan');
     }
 
     /**
-     * 📌 Menampilkan form edit
+     * 📌 Form edit karyawan
      */
-    public function edit($id)
+    public function edit(Karyawan $karyawan) // ✅ Route Model Binding
     {
-        $karyawan = Karyawan::findOrFail($id);
-
         return view('karyawan.edit', compact('karyawan'));
     }
 
     /**
      * 📌 Update data karyawan
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Karyawan $karyawan) // ✅ Binding
     {
-        $karyawan = Karyawan::findOrFail($id);
-
-        $karyawan->update([
-            'nama_karyawan' => $request->nama_karyawan
+        $validated = $request->validate([
+            'nama_karyawan' => 'required|string|max:255',
+            'jabatan'       => 'nullable|string|max:255',
+            'tanggal_masuk' => 'nullable|date',
+            'status'        => 'required|in:aktif,nonaktif',
         ]);
 
-        return redirect()->route('karyawan.index');
+        $karyawan->update($validated);
+
+        return redirect()
+            ->route('karyawan.index')
+            ->with('success', 'Data karyawan berhasil diupdate');
     }
 
     /**
      * 📌 Hapus data karyawan
      */
-    public function destroy($id)
+    public function destroy(Karyawan $karyawan) // ✅ Binding
     {
-        Karyawan::findOrFail($id)->delete();
+        // ⚠️ Optional: cek relasi biar tidak error FK
+        if ($karyawan->detailPenilaian()->exists()) {
+            return redirect()
+                ->route('karyawan.index')
+                ->with('error', 'Data tidak bisa dihapus karena sudah digunakan di penilaian');
+        }
 
-        return back();
+        $karyawan->delete();
+
+        return redirect()
+            ->route('karyawan.index')
+            ->with('success', 'Data karyawan berhasil dihapus');
     }
 }

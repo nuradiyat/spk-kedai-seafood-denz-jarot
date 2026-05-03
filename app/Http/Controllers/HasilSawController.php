@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\HasilSaw;
+use App\Models\Penilaian;
 use App\Services\SAWService;
 
 class HasilSawController extends Controller
 {
     protected $saw;
 
-    // ✅ Dependency Injection
+    /**
+     * 📌 Dependency Injection
+     */
     public function __construct(SAWService $saw)
     {
         $this->saw = $saw;
@@ -18,12 +21,17 @@ class HasilSawController extends Controller
     /**
      * 📌 Jalankan perhitungan SAW & simpan ke database
      */
-    public function proses($id_penilaian)
+    public function proses($penilaian_id)
     {
-        // ✅ pakai service dari DI
-        $this->saw->calculate($id_penilaian);
+        // ✅ Pastikan penilaian ada
+        $penilaian = Penilaian::findOrFail($penilaian_id);
 
-        return back()->with('success', 'Perhitungan SAW berhasil');
+        // ✅ Jalankan SAW (gunakan ID langsung)
+        $this->saw->calculate($penilaian->id);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Perhitungan SAW berhasil dilakukan');
     }
 
     /**
@@ -31,20 +39,24 @@ class HasilSawController extends Controller
      */
     public function index()
     {
-        $hasil = HasilSaw::with('karyawan')
-            ->orderBy('ranking')
+        $hasil = HasilSaw::with(['karyawan', 'penilaian'])
+            ->orderBy('ranking', 'asc')
             ->get();
 
         return view('hasil.index', compact('hasil'));
     }
 
     /**
-     * 📌 Detail perhitungan SAW (tidak dari DB, tapi dihitung ulang)
+     * 📌 Detail perhitungan SAW (REALTIME, tidak dari DB)
      */
-    public function detail($id_penilaian)
+    public function detail($penilaian_id)
     {
-        $hasil = $this->saw->hitung($id_penilaian);
+        // ✅ Validasi penilaian
+        $penilaian = Penilaian::findOrFail($penilaian_id);
 
-        return view('hasil.detail', compact('hasil'));
+        // ✅ Hitung SAW tanpa simpan
+        $hasil = $this->saw->hitung($penilaian->id);
+
+        return view('hasil.detail', compact('hasil', 'penilaian'));
     }
 }

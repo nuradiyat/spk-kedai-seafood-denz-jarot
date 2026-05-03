@@ -11,22 +11,22 @@ class DetailPenilaianSeeder extends Seeder
     {
         DetailPenilaian::insert([
             // ANDI
-            ['id_penilaian'=>1,'id_karyawan'=>1,'id_kriteria'=>1,'nilai'=>80],
-            ['id_penilaian'=>1,'id_karyawan'=>1,'id_kriteria'=>2,'nilai'=>70],
-            ['id_penilaian'=>1,'id_karyawan'=>1,'id_kriteria'=>3,'nilai'=>90],
-            ['id_penilaian'=>1,'id_karyawan'=>1,'id_kriteria'=>4,'nilai'=>85],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>1,'nilai'=>80],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>2,'nilai'=>70],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>3,'nilai'=>90],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>4,'nilai'=>85],
 
             // BUDI
-            ['id_penilaian'=>1,'id_karyawan'=>2,'id_kriteria'=>1,'nilai'=>60],
-            ['id_penilaian'=>1,'id_karyawan'=>2,'id_kriteria'=>2,'nilai'=>75],
-            ['id_penilaian'=>1,'id_karyawan'=>2,'id_kriteria'=>3,'nilai'=>80],
-            ['id_penilaian'=>1,'id_karyawan'=>2,'id_kriteria'=>4,'nilai'=>70],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>1,'nilai'=>60],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>2,'nilai'=>75],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>3,'nilai'=>80],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>4,'nilai'=>70],
 
             // CITRA
-            ['id_penilaian'=>1,'id_karyawan'=>3,'id_kriteria'=>1,'nilai'=>90],
-            ['id_penilaian'=>1,'id_karyawan'=>3,'id_kriteria'=>2,'nilai'=>85],
-            ['id_penilaian'=>1,'id_karyawan'=>3,'id_kriteria'=>3,'nilai'=>95],
-            ['id_penilaian'=>1,'id_karyawan'=>3,'id_kriteria'=>4,'nilai'=>88],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>1,'nilai'=>90],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>2,'nilai'=>85],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>3,'nilai'=>95],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>4,'nilai'=>88],
         ]);
     }
 }

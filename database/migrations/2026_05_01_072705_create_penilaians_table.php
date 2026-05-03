@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::create('penilaians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('periode');
             $table->date('tanggal_penilaian');
             $table->timestamps();

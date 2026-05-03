@@ -38,7 +38,7 @@ class PenilaianController extends Controller
     {
         // 1️⃣ Simpan data penilaian (periode)
         $penilaian = Penilaian::create([
-            'id_user' => auth()->user()->id, // Ambil ID user yang sedang login dari session
+            'user_id' => auth()->user()->id, // Ambil ID user yang sedang login dari session
             'periode' => $request->periode, // Ambil periode dari form input
             'tanggal_penilaian' => now()
         ]);
@@ -49,9 +49,9 @@ class PenilaianController extends Controller
             foreach ($nilaiKriteria as $id_kriteria => $nilai) {
 
                 DetailPenilaian::create([
-                    'id_penilaian' => $penilaian->id,
-                    'id_karyawan' => $id_karyawan,
-                    'id_kriteria' => $id_kriteria,
+                    'penilaian_id' => $penilaian->id,
+                    'karyawan_id' => $id_karyawan,
+                    'kriteria_id' => $id_kriteria,
                     'nilai' => $nilai
                 ]);
             }
