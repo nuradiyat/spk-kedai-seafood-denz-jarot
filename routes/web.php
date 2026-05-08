@@ -1,71 +1,149 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| CONTROLLERS
+|--------------------------------------------------------------------------
+*/
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
 use App\Http\Controllers\RiwayatPenilaianController;
-
 /*
-🔓 ROUTE PUBLIK (LOGIN)
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
 */
 
-// halaman login
+/**
+ * =========================================
+ * HALAMAN LOGIN
+ * =========================================
+ */
 Route::get('/', function () {
-    return view('auth.login');
-})->name('login');
+    return view('index');
+})->name('home');
+// Route::get('/', [AuthController::class, 'showLogin'])
+//     ->name('login');
 
-// proses login
-Route::post('/login', function () {
-    // nanti logic login
-})->name('login.process');
+/**
+ * =========================================
+ * PROSES LOGIN
+ * =========================================
+ */
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.process');
+
+/**
+ * =========================================
+ * LOGOUT
+ * =========================================
+ */
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
 
 /*
-🔐 ROUTE AUTH (HARUS LOGIN)
+|--------------------------------------------------------------------------
+| DASHBOARD (SEMUA ROLE)
+|--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware('auth')->group(function () {
 
-    /*
-    👤 ROLE ADMIN
-    */
-    Route::middleware(['role:admin'])->group(function () {
+    /**
+     * =========================================
+     * DASHBOARD
+     * =========================================
+     */
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+});
 
-        // CRUD Karyawan
-        Route::resource('karyawan', KaryawanController::class);
 
-        // CRUD Kriteria (tanpa create & edit page)
-        Route::resource('kriteria', KriteriaController::class)->except(['create', 'edit', 'show']);
+/*
+|--------------------------------------------------------------------------
+| ADMIN ONLY
+|--------------------------------------------------------------------------
+*/
 
-        // Penilaian
-        Route::resource('penilaian', PenilaianController::class)->only(['index', 'create', 'store']);
+Route::middleware(['auth', 'role:admin'])->group(function () {
 
-        // Proses SAW
-        Route::get('/hasil/proses/{id}', [HasilSawController::class, 'proses'])->name('hasil.proses');
-    });
+    /**
+     * =========================================
+     * DATA KARYAWAN
+     * =========================================
+     */
+    Route::resource('karyawan', KaryawanController::class);
 
-    /*
-    👑 ROLE OWNER
-    */
-    Route::middleware(['role:owner'])->group(function () {
+    /**
+     * =========================================
+     * KRITERIA & BOBOT
+     * =========================================
+     */
+    Route::resource('kriteria', KriteriaController::class);
 
-        // Hasil SAW
-        Route::get('/hasil', [HasilSawController::class, 'index'])->name('hasil.index');
+    /**
+     * =========================================
+     * PENILAIAN
+     * =========================================
+     */
+    Route::resource('penilaian', PenilaianController::class);
+});
 
-        // Detail perhitungan (WAJIB ADA ID)
-        Route::get('/hasil/detail/{id}', [HasilSawController::class, 'detail'])->name('hasil.detail');
 
-        // Riwayat
-        Route::get('/riwayat', [RiwayatPenilaianController::class, 'index'])->name('riwayat.index');
-    });
+/*
+|--------------------------------------------------------------------------
+| ADMIN & OWNER
+|--------------------------------------------------------------------------
+*/
 
-    /*
-    🔓 LOGOUT
-    */
-    Route::post('/logout', function () {
-        auth()->logout();
-        return redirect()->route('login');
-    })->name('logout');
+Route::middleware(['auth', 'role:admin,owner'])->group(function () {
+
+    /**
+     * =========================================
+     * HASIL SAW
+     * =========================================
+     */
+    Route::get('/hasil', [HasilSawController::class, 'index'])
+        ->name('hasil.index');
+
+    /**
+     * =========================================
+     * DETAIL PERHITUNGAN SAW
+     * =========================================
+     */
+    Route::get('/hasil/{penilaian}/detail', [HasilSawController::class, 'detail'])
+        ->name('hasil.detail');
+
+    /**
+     * =========================================
+     * PROSES PERHITUNGAN SAW
+     * =========================================
+     */
+    Route::post('/hasil/{penilaian}/proses', [HasilSawController::class, 'proses'])
+        ->name('hasil.proses');
+
+    /**
+     * =========================================
+     * RIWAYAT PENILAIAN
+     * =========================================
+     */
+    Route::get('/riwayat', [RiwayatPenilaianController::class, 'index'])
+        ->name('riwayat.index');
+
+    /**
+     * =========================================
+     * DETAIL RIWAYAT
+     * =========================================
+     */
+    Route::get('/riwayat/{penilaian}', [RiwayatPenilaianController::class, 'detail'])
+        ->name('riwayat.detail');
 });

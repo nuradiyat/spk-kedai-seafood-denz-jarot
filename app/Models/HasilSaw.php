@@ -4,25 +4,39 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HasilSaw extends Model
 {
-    // di sini kita akan menyimpan hasil perhitungan SAW untuk setiap karyawan pada setiap penilaian
     protected $fillable = [
         'penilaian_id',
         'karyawan_id',
         'nilai_akhir',
         'ranking',
-        'status_bonus'
+        'status_bonus',
     ];
 
+    /**
+     * Relasi ke penilaian
+     */
     public function penilaian(): BelongsTo
     {
         return $this->belongsTo(Penilaian::class);
     }
 
+    /**
+     * Relasi ke karyawan
+     */
     public function karyawan(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class);
+    }
+
+    /**
+     * Relasi riwayat
+     */
+    public function riwayatPenilaians(): HasMany
+    {
+        return $this->hasMany(RiwayatPenilaian::class);
     }
 }

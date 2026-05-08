@@ -7,25 +7,32 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailPenilaian extends Model
 {
-    
-    // digunakan untuk menentukan kolom mana saja yang bisa diisi secara massal
     protected $fillable = [
         'penilaian_id',
         'karyawan_id',
         'kriteria_id',
-        'nilai'
+        'nilai',
     ];
 
+    /**
+     * Relasi ke penilaian
+     */
     public function penilaian(): BelongsTo
     {
         return $this->belongsTo(Penilaian::class);
     }
 
+    /**
+     * Relasi ke karyawan
+     */
     public function karyawan(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class);
     }
 
+    /**
+     * Relasi ke kriteria
+     */
     public function kriteria(): BelongsTo
     {
         return $this->belongsTo(Kriteria::class);

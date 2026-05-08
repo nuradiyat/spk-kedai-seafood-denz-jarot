@@ -8,6 +8,9 @@ use App\Services\SAWService;
 
 class HasilSawController extends Controller
 {
+    /**
+     * 📌 Service SAW
+     */
     protected $saw;
 
     /**
@@ -19,44 +22,94 @@ class HasilSawController extends Controller
     }
 
     /**
-     * 📌 Jalankan perhitungan SAW & simpan ke database
+     * 📌 Tampilkan hasil ranking
      */
-    public function proses($penilaian_id)
+    public function index()
     {
-        // ✅ Pastikan penilaian ada
-        $penilaian = Penilaian::findOrFail($penilaian_id);
+        $hasils = HasilSaw::with([
+            'karyawan',
+            'penilaian'
+        ])
+            ->orderBy('ranking', 'asc')
+            ->latest()
+            ->get();
 
-        // ✅ Jalankan SAW (gunakan ID langsung)
+        return view('pages.hasil.index', compact('hasils'));
+    }
+
+    /**
+     * 📌 Jalankan perhitungan SAW
+     */
+    public function proses($id)
+    {
+        /**
+         * =========================
+         * VALIDASI PENILAIAN
+         * =========================
+         */
+        $penilaian = Penilaian::findOrFail($id);
+
+        /**
+         * =========================
+         * HITUNG SAW
+         * =========================
+         */
         $this->saw->calculate($penilaian->id);
 
         return redirect()
-            ->back()
+            ->route('hasil.index')
             ->with('success', 'Perhitungan SAW berhasil dilakukan');
     }
 
     /**
-     * 📌 Tampilkan hasil ranking (dari database)
+     * 📌 Detail proses SAW
      */
-    public function index()
+    public function detail($id)
     {
-        $hasil = HasilSaw::with(['karyawan', 'penilaian'])
-            ->orderBy('ranking', 'asc')
-            ->get();
+        /**
+         * =========================
+         * VALIDASI PENILAIAN
+         * =========================
+         */
+        $penilaian = Penilaian::findOrFail($id);
 
-        return view('hasil.index', compact('hasil'));
+        /**
+         * =========================
+         * HITUNG DETAIL SAW
+         * =========================
+         */
+        $hasil = $this->saw->hitung($penilaian->id);
+
+        return view('pages.hasil.detail', compact(
+            'hasil',
+            'penilaian'
+        ));
     }
 
     /**
-     * 📌 Detail perhitungan SAW (REALTIME, tidak dari DB)
+     * 📌 Tampilan podium ranking
      */
-    public function detail($penilaian_id)
+    public function podium()
     {
-        // ✅ Validasi penilaian
-        $penilaian = Penilaian::findOrFail($penilaian_id);
+        $topRank = HasilSaw::with('karyawan')
+            ->orderBy('ranking', 'asc')
+            ->take(3)
+            ->get();
 
-        // ✅ Hitung SAW tanpa simpan
-        $hasil = $this->saw->hitung($penilaian->id);
+        return view('pages.hasil.podium', compact('topRank'));
+    }
 
-        return view('hasil.detail', compact('hasil', 'penilaian'));
+    /**
+     * 📌 Hapus hasil SAW
+     */
+    public function destroy($id)
+    {
+        $hasil = HasilSaw::findOrFail($id);
+
+        $hasil->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Hasil SAW berhasil dihapus');
     }
 }

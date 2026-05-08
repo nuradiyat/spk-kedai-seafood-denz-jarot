@@ -7,20 +7,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Karyawan extends Model
 {
-    // disini kita tentukan kolom mana saja yang bisa diisi secara massal
     protected $fillable = [
         'nama_karyawan',
         'jabatan',
         'tanggal_masuk',
-        'status'
+        'status',
     ];
 
-    public function detailPenilaian(): HasMany
+    /**
+     * Relasi detail penilaian
+     */
+    public function detailPenilaians(): HasMany
     {
         return $this->hasMany(DetailPenilaian::class);
     }
 
-    public function hasilSaw(): HasMany
+    /**
+     * Relasi hasil SAW
+     */
+    public function hasilSaws(): HasMany
     {
         return $this->hasMany(HasilSaw::class);
     }

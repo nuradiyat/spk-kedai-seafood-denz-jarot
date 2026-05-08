@@ -7,19 +7,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RiwayatPenilaian extends Model
 {
-    // digunakan untuk menentukan kolom mana saja yang bisa diisi secara massal
     protected $fillable = [
         'hasil_saw_id',
         'periode',
         'tanggal',
-        'keterangan'
+        'keterangan',
     ];
 
-    protected $casts = [
-        'tanggal' => 'date',
-    ];
-
-    public function hasil(): BelongsTo
+    /**
+     * Relasi ke hasil SAW
+     */
+    public function hasilSaw(): BelongsTo
     {
         return $this->belongsTo(HasilSaw::class);
     }

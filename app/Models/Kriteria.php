@@ -7,19 +7,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Kriteria extends Model
 {
-    // disini kita tentukan kolom mana saja yang bisa diisi secara massal
     protected $fillable = [
         'kode',
         'nama_kriteria',
         'bobot',
-        'jenis'
+        'jenis',
     ];
 
-    protected $casts = [
-        'bobot' => 'float',
-    ];
-
-    public function detailPenilaian(): HasMany
+    /**
+     * Relasi detail penilaian
+     */
+    public function detailPenilaians(): HasMany
     {
         return $this->hasMany(DetailPenilaian::class);
     }

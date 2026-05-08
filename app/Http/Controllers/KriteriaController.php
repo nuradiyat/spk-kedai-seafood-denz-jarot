@@ -8,25 +8,25 @@ use Illuminate\Http\Request;
 class KriteriaController extends Controller
 {
     /**
-     * 📌 Tampilkan semua kriteria
+     * Tampilkan semua kriteria
      */
     public function index()
     {
         $kriterias = Kriteria::latest()->get();
 
-        return view('kriteria.index', compact('kriterias'));
+        return view('pages.kriteria.index', compact('kriterias'));
     }
 
     /**
-     * 📌 Form tambah kriteria
+     * Form tambah
      */
     public function create()
     {
-        return view('kriteria.create');
+        return view('pages.kriteria.create');
     }
 
     /**
-     * 📌 Simpan kriteria
+     * Simpan data
      */
     public function store(Request $request)
     {
@@ -45,23 +45,27 @@ class KriteriaController extends Controller
     }
 
     /**
-     * 📌 Form edit kriteria
+     * Form edit
      */
-    public function edit(Kriteria $kriteria) // ✅ Route Model Binding
+    public function edit($id)
     {
-        return view('kriteria.edit', compact('kriteria'));
+        $kriteria = Kriteria::findOrFail($id);
+
+        return view('pages.kriteria.edit', compact('kriteria'));
     }
 
     /**
-     * 📌 Update kriteria
+     * Update data
      */
-    public function update(Request $request, Kriteria $kriteria) // ✅ Binding
+    public function update(Request $request, $id)
     {
+        $kriteria = Kriteria::findOrFail($id);
+
         $validated = $request->validate([
-            'kode' => 'required|string|max:10|unique:kriterias,kode,' . $kriteria->id,
+            'kode'          => 'required|string|max:10|unique:kriterias,kode,' . $id,
             'nama_kriteria' => 'required|string|max:255',
-            'bobot' => 'required|numeric|min:0|max:1',
-            'jenis' => 'required|in:benefit,cost',
+            'bobot'         => 'required|numeric|min:0|max:1',
+            'jenis'         => 'required|in:benefit,cost',
         ]);
 
         $kriteria->update($validated);
@@ -72,16 +76,11 @@ class KriteriaController extends Controller
     }
 
     /**
-     * 📌 Hapus kriteria
+     * Hapus data
      */
-    public function destroy(Kriteria $kriteria) // ✅ Binding
+    public function destroy($id)
     {
-        // ⚠️ Cegah error jika dipakai di penilaian
-        if ($kriteria->detailPenilaian()->exists()) {
-            return redirect()
-                ->route('kriteria.index')
-                ->with('error', 'Kriteria tidak bisa dihapus karena sudah digunakan');
-        }
+        $kriteria = Kriteria::findOrFail($id);
 
         $kriteria->delete();
 

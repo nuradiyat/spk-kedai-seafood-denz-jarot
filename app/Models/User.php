@@ -2,21 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    // kita gunakan trait Notifiable untuk mengirim notifikasi
-    use Notifiable;
-   
-    // disini kita tentukan kolom mana saja yang bisa diisi secara massal
+    use HasFactory, Notifiable;
+
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role'
+        'role',
     ];
 
     protected $hidden = [
@@ -32,7 +31,10 @@ class User extends Authenticatable
         ];
     }
 
-    public function penilaian(): HasMany
+    /**
+     * Relasi ke penilaian
+     */
+    public function penilaians(): HasMany
     {
         return $this->hasMany(Penilaian::class);
     }

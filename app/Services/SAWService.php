@@ -10,25 +10,29 @@ use App\Models\HasilSaw;
 class SAWService
 {
     /**
-     * 📌 HITUNG SAW + SIMPAN KE DATABASE
+     * ==========================================
+     * HITUNG SAW + SIMPAN KE DATABASE
+     * ==========================================
      */
-    public function calculate($id_penilaian)
+    public function calculate($penilaianId)
     {
-        $data = $this->hitung($id_penilaian);
+        $data = $this->hitung($penilaianId);
 
         $ranking = 1;
 
-        foreach ($data['ranking'] as $id_karyawan => $nilai_akhir) {
+        foreach ($data['ranking'] as $karyawanId => $nilaiAkhir) {
 
             HasilSaw::updateOrCreate(
                 [
-                    'id_penilaian' => $id_penilaian,
-                    'id_karyawan' => $id_karyawan
+                    'penilaian_id' => $penilaianId,
+                    'karyawan_id' => $karyawanId,
                 ],
                 [
-                    'nilai_akhir' => $nilai_akhir,
+                    'nilai_akhir' => $nilaiAkhir,
                     'ranking' => $ranking,
-                    'status_bonus' => $ranking == 1 ? 'Diterima' : 'Tidak'
+                    'status_bonus' => $ranking == 1
+                        ? 'Diterima'
+                        : 'Tidak',
                 ]
             );
 
@@ -39,111 +43,166 @@ class SAWService
     }
 
     /**
-     * 📌 HITUNG SAW (UNTUK VIEW DETAIL)
+     * ==========================================
+     * HITUNG METODE SAW
+     * ==========================================
      */
-    public function hitung($id_penilaian)
+    public function hitung($penilaianId)
     {
-        $karyawan = Karyawan::all();
-        $kriteria = Kriteria::all();
+        /**
+         * ==========================
+         * AMBIL DATA
+         * ==========================
+         */
+        $karyawans = Karyawan::all();
 
-        // ========================
-        // 1. MATRIX NILAI AWAL
-        // ========================
+        $kriterias = Kriteria::all();
+
+        /**
+         * ==========================
+         * 1. MATRIX NILAI AWAL
+         * ==========================
+         */
         $matrix = [];
 
-        foreach ($karyawan as $k) {
-            foreach ($kriteria as $kr) {
+        foreach ($karyawans as $karyawan) {
+
+            foreach ($kriterias as $kriteria) {
 
                 $nilai = DetailPenilaian::where([
-                    'id_penilaian' => $id_penilaian,
-                    'id_karyawan' => $k->id,
-                    'id_kriteria' => $kr->id
+                    'penilaian_id' => $penilaianId,
+                    'karyawan_id' => $karyawan->id,
+                    'kriteria_id' => $kriteria->id,
                 ])->value('nilai');
 
-                $matrix[$k->id][$kr->id] = $nilai ?? 0;
+                $matrix[$karyawan->id][$kriteria->id] = $nilai ?? 0;
             }
         }
 
-        // ========================
-        // 2. MAX / MIN
-        // ========================
+        /**
+         * ==========================
+         * 2. MAX & MIN
+         * ==========================
+         */
         $max = [];
+
         $min = [];
 
-        foreach ($kriteria as $kr) {
-            $values = array_column($matrix, $kr->id);
+        foreach ($kriterias as $kriteria) {
 
-            $max[$kr->id] = max($values);
-            $min[$kr->id] = min($values);
+            $values = array_column(
+                $matrix,
+                $kriteria->id
+            );
+
+            $max[$kriteria->id] = max($values);
+
+            $min[$kriteria->id] = min($values);
         }
 
-        // ========================
-        // 3. NORMALISASI
-        // ========================
+        /**
+         * ==========================
+         * 3. NORMALISASI
+         * ==========================
+         */
         $normalisasi = [];
 
-        foreach ($kriteria as $kr) {
-            foreach ($karyawan as $k) {
+        foreach ($kriterias as $kriteria) {
 
-                $value = $matrix[$k->id][$kr->id];
+            foreach ($karyawans as $karyawan) {
 
-                if ($kr->jenis == 'benefit') {
-                    $normalisasi[$k->id][$kr->id] =
-                        $value / ($max[$kr->id] ?: 1);
-                } else {
-                    $normalisasi[$k->id][$kr->id] =
-                        ($min[$kr->id] ?: 1) / ($value ?: 1);
+                $value = $matrix[$karyawan->id][$kriteria->id];
+
+                /**
+                 * BENEFIT
+                 */
+                if ($kriteria->jenis == 'benefit') {
+
+                    $normalisasi[$karyawan->id][$kriteria->id] =
+                        $value / ($max[$kriteria->id] ?: 1);
+                }
+
+                /**
+                 * COST
+                 */
+                else {
+
+                    $normalisasi[$karyawan->id][$kriteria->id] =
+                        ($min[$kriteria->id] ?: 1) / ($value ?: 1);
                 }
             }
         }
 
-        // ========================
-        // 4. BOBOT
-        // ========================
+        /**
+         * ==========================
+         * 4. BOBOT KRITERIA
+         * ==========================
+         */
         $bobot = [];
-        foreach ($kriteria as $kr) {
-            $bobot[$kr->id] = $kr->bobot;
+
+        foreach ($kriterias as $kriteria) {
+
+            $bobot[$kriteria->id] = $kriteria->bobot;
         }
 
-        // ========================
-        // 5. TERBOBOT
-        // ========================
+        /**
+         * ==========================
+         * 5. MATRIX TERBOBOT
+         * ==========================
+         */
         $terbobot = [];
 
-        foreach ($karyawan as $k) {
-            foreach ($kriteria as $kr) {
+        foreach ($karyawans as $karyawan) {
 
-                $terbobot[$k->id][$kr->id] =
-                    $normalisasi[$k->id][$kr->id] * $kr->bobot;
+            foreach ($kriterias as $kriteria) {
+
+                $terbobot[$karyawan->id][$kriteria->id] =
+                    $normalisasi[$karyawan->id][$kriteria->id]
+                    * $kriteria->bobot;
             }
         }
 
-        // ========================
-        // 6. NILAI AKHIR
-        // ========================
+        /**
+         * ==========================
+         * 6. NILAI AKHIR
+         * ==========================
+         */
         $nilaiAkhir = [];
 
-        foreach ($karyawan as $k) {
-            $total = array_sum($terbobot[$k->id]);
-            $nilaiAkhir[$k->id] = $total;
+        foreach ($karyawans as $karyawan) {
+
+            $total = array_sum(
+                $terbobot[$karyawan->id]
+            );
+
+            $nilaiAkhir[$karyawan->id] = $total;
         }
 
-        // ========================
-        // 7. RANKING
-        // ========================
+        /**
+         * ==========================
+         * 7. RANKING
+         * ==========================
+         */
         arsort($nilaiAkhir);
 
+        $ranking = $nilaiAkhir;
+
+        /**
+         * ==========================
+         * RETURN DATA
+         * ==========================
+         */
         return [
-            'karyawan'     => $karyawan,
-            'kriteria'     => $kriteria,
-            'nilai_awal'   => $matrix,
-            'max'          => $max,
-            'min'          => $min,
-            'normalisasi'  => $normalisasi,
-            'bobot'        => $bobot,
-            'terbobot'     => $terbobot,
-            'nilai_akhir'  => $nilaiAkhir,
-            'ranking'      => $nilaiAkhir,
+            'karyawans'     => $karyawans,
+            'kriterias'     => $kriterias,
+            'nilai_awal'    => $matrix,
+            'max'           => $max,
+            'min'           => $min,
+            'normalisasi'   => $normalisasi,
+            'bobot'         => $bobot,
+            'terbobot'      => $terbobot,
+            'nilai_akhir'   => $nilaiAkhir,
+            'ranking'       => $ranking,
         ];
     }
 }

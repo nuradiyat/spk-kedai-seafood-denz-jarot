@@ -8,25 +8,25 @@ use Illuminate\Http\Request;
 class KaryawanController extends Controller
 {
     /**
-     * 📌 Menampilkan semua data karyawan
+     * Tampilkan semua karyawan
      */
     public function index()
     {
         $karyawans = Karyawan::latest()->get();
 
-        return view('karyawan.index', compact('karyawans'));
+        return view('pages.karyawan.index', compact('karyawans'));
     }
 
     /**
-     * 📌 Form tambah karyawan
+     * Form tambah
      */
     public function create()
     {
-        return view('karyawan.create');
+        return view('pages.karyawan.create');
     }
 
     /**
-     * 📌 Simpan data karyawan
+     * Simpan data
      */
     public function store(Request $request)
     {
@@ -45,18 +45,32 @@ class KaryawanController extends Controller
     }
 
     /**
-     * 📌 Form edit karyawan
+     * Detail karyawan
      */
-    public function edit(Karyawan $karyawan) // ✅ Route Model Binding
+    public function show($id)
     {
-        return view('karyawan.edit', compact('karyawan'));
+        $karyawan = Karyawan::findOrFail($id);
+
+        return view('pages.karyawan.show', compact('karyawan'));
     }
 
     /**
-     * 📌 Update data karyawan
+     * Form edit
      */
-    public function update(Request $request, Karyawan $karyawan) // ✅ Binding
+    public function edit($id)
     {
+        $karyawan = Karyawan::findOrFail($id);
+
+        return view('pages.karyawan.edit', compact('karyawan'));
+    }
+
+    /**
+     * Update data
+     */
+    public function update(Request $request, $id)
+    {
+        $karyawan = Karyawan::findOrFail($id);
+
         $validated = $request->validate([
             'nama_karyawan' => 'required|string|max:255',
             'jabatan'       => 'nullable|string|max:255',
@@ -72,16 +86,11 @@ class KaryawanController extends Controller
     }
 
     /**
-     * 📌 Hapus data karyawan
+     * Hapus data
      */
-    public function destroy(Karyawan $karyawan) // ✅ Binding
+    public function destroy($id)
     {
-        // ⚠️ Optional: cek relasi biar tidak error FK
-        if ($karyawan->detailPenilaian()->exists()) {
-            return redirect()
-                ->route('karyawan.index')
-                ->with('error', 'Data tidak bisa dihapus karena sudah digunakan di penilaian');
-        }
+        $karyawan = Karyawan::findOrFail($id);
 
         $karyawan->delete();
 

@@ -8,28 +8,32 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Penilaian extends Model
 {
-    // digunakan untuk menentukan kolom mana saja yang bisa diisi secara massal
     protected $fillable = [
         'user_id',
         'periode',
-        'tanggal_penilaian'
+        'tanggal_penilaian',
     ];
 
-    protected $casts = [
-        'tanggal_penilaian' => 'date',
-    ];
-
+    /**
+     * Relasi ke user
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function detail(): HasMany
+    /**
+     * Relasi detail penilaian
+     */
+    public function detailPenilaians(): HasMany
     {
         return $this->hasMany(DetailPenilaian::class);
     }
 
-    public function hasil(): HasMany
+    /**
+     * Relasi hasil SAW
+     */
+    public function hasilSaws(): HasMany
     {
         return $this->hasMany(HasilSaw::class);
     }
