@@ -26,11 +26,8 @@ use App\Http\Controllers\RiwayatPenilaianController;
  * HALAMAN LOGIN
  * =========================================
  */
-Route::get('/', function () {
-    return view('index');
-})->name('home');
-// Route::get('/', [AuthController::class, 'showLogin'])
-//     ->name('login');
+Route::get('/', [AuthController::class, 'showLogin'])
+    ->name('login');
 
 /**
  * =========================================

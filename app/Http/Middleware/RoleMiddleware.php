@@ -13,19 +13,21 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, $role): Response
     {
-        // ✅ Cek apakah user sudah login
+        // Cek apakah user sudah login
         if (!auth()->check()) {
             return redirect()->route('login');
         }
 
-        // ✅ Cek role user
+        // Cek role user
         if (auth()->user()->role !== $role) {
 
             // bisa pakai abort
-            abort(403, 'ANDA TIDAK MEMILIKI AKSES');
+            // abort(403, 'Akses ditolak');
 
             // atau redirect
-            // return redirect()->back();
+            return redirect()->back()->with([
+                'error' => 'Anda tidak memiliki akses ke halaman ini',
+            ]);
         }
 
         return $next($request);
