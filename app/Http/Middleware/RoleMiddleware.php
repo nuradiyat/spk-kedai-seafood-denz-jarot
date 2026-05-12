@@ -22,10 +22,7 @@ class RoleMiddleware
         // Cek role user
         if (Auth::user()->role !== $role) {
 
-            // bisa pakai abort
-            // abort(403, 'Akses ditolak');
-
-            // atau redirect
+            // redirect
             return redirect()->back()->with([
                 'error' => 'Anda tidak memiliki akses ke halaman ini',
             ]);
