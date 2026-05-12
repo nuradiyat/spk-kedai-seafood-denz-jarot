@@ -22,7 +22,6 @@ class DashboardController extends Controller
 
         $ranking = HasilSaw::with('karyawan')
             ->orderBy('ranking')
-            ->take(5)
             ->get();
 
         return view('pages.dashboard.index', compact(

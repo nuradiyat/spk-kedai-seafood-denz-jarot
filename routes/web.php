@@ -15,6 +15,7 @@ use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
 use App\Http\Controllers\RiwayatPenilaianController;
+
 /*
 |--------------------------------------------------------------------------
 | AUTH
@@ -69,6 +70,12 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 | ADMIN ONLY
 |--------------------------------------------------------------------------
+|
+| Admin:
+| - CRUD Karyawan
+| - CRUD Kriteria
+| - Input Penilaian
+|
 */
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -89,7 +96,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     /**
      * =========================================
-     * PENILAIAN
+     * INPUT PENILAIAN
      * =========================================
      */
     Route::resource('penilaian', PenilaianController::class);
@@ -100,13 +107,36 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 |--------------------------------------------------------------------------
 | ADMIN & OWNER
 |--------------------------------------------------------------------------
+|
+| Admin dan Owner:
+| - Melihat proses SAW
+| - Hasil ranking
+| - Riwayat
+| - Export laporan
+|
 */
 
 Route::middleware(['auth', 'role:admin,owner'])->group(function () {
 
     /**
      * =========================================
-     * HASIL SAW
+     * HALAMAN PERHITUNGAN SAW
+     * =========================================
+     */
+    Route::get('/penilaian/saw', [HasilSawController::class, 'saw'])
+        ->name('penilaian.saw');
+
+    /**
+     * =========================================
+     * HALAMAN NORMALISASI
+     * =========================================
+     */
+    Route::get('/penilaian/normalisasi', [HasilSawController::class, 'normalisasi'])
+        ->name('penilaian.normalisasi');
+
+    /**
+     * =========================================
+     * HASIL RANKING
      * =========================================
      */
     Route::get('/hasil', [HasilSawController::class, 'index'])
@@ -114,18 +144,26 @@ Route::middleware(['auth', 'role:admin,owner'])->group(function () {
 
     /**
      * =========================================
-     * DETAIL PERHITUNGAN SAW
+     * DETAIL HASIL
      * =========================================
      */
-    Route::get('/hasil/{penilaian}/detail', [HasilSawController::class, 'detail'])
+    Route::get('/hasil/{penilaian}', [HasilSawController::class, 'detail'])
         ->name('hasil.detail');
+
+    /**
+     * =========================================
+     * PODIUM TOP 3
+     * =========================================
+     */
+    Route::get('/hasil/podium', [HasilSawController::class, 'podium'])
+        ->name('hasil.podium');
 
     /**
      * =========================================
      * PROSES PERHITUNGAN SAW
      * =========================================
      */
-    Route::post('/hasil/{penilaian}/proses', [HasilSawController::class, 'proses'])
+    Route::post('/hasil/proses', [HasilSawController::class, 'proses'])
         ->name('hasil.proses');
 
     /**
@@ -143,4 +181,12 @@ Route::middleware(['auth', 'role:admin,owner'])->group(function () {
      */
     Route::get('/riwayat/{penilaian}', [RiwayatPenilaianController::class, 'detail'])
         ->name('riwayat.detail');
+
+    /**
+     * =========================================
+     * EXPORT LAPORAN
+     * =========================================
+     */
+    Route::get('/riwayat/export/pdf', [RiwayatPenilaianController::class, 'export'])
+        ->name('riwayat.export');
 });
