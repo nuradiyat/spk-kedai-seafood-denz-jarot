@@ -27,13 +27,22 @@ class HasilSawController extends Controller
      */
     public function index()
     {
-        $hasils = HasilSaw::with([
-            'karyawan',
-            'penilaian'
-        ])
-            ->orderBy('ranking', 'asc')
-            ->latest()
-            ->get();
+        $lastHasil = HasilSaw::latest()->first();
+
+        if (!$lastHasil) {
+
+            $hasils = collect();
+
+        } else {
+
+            $hasils = HasilSaw::with([
+                'karyawan',
+                'penilaian'
+            ])
+                ->where('penilaian_id', $lastHasil->penilaian_id)
+                ->orderBy('ranking', 'asc')
+                ->get();
+        }
 
         return view('pages.hasil.index', compact('hasils'));
     }
@@ -49,6 +58,14 @@ class HasilSawController extends Controller
          * =========================
          */
         $penilaian = Penilaian::findOrFail($id);
+
+        /**
+         * =========================
+         * HAPUS HASIL LAMA
+         * =========================
+         */
+        HasilSaw::where('penilaian_id', $penilaian->id)
+            ->delete();
 
         /**
          * =========================
@@ -92,10 +109,20 @@ class HasilSawController extends Controller
      */
     public function podium()
     {
-        $topRank = HasilSaw::with('karyawan')
-            ->orderBy('ranking', 'asc')
-            ->take(3)
-            ->get();
+        $lastHasil = HasilSaw::latest()->first();
+
+        if (!$lastHasil) {
+
+            $topRank = collect();
+
+        } else {
+
+            $topRank = HasilSaw::with('karyawan')
+                ->where('penilaian_id', $lastHasil->penilaian_id)
+                ->orderBy('ranking', 'asc')
+                ->take(3)
+                ->get();
+        }
 
         return view('pages.hasil.podium', compact('topRank'));
     }

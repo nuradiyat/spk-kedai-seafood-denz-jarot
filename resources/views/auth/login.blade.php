@@ -34,7 +34,7 @@ LAYOUT  : layouts/guest.blade.php
         @csrf
         {{-- Input email --}}
         <div class="mb-5">
-            <label class="block text-sm font-semibold text-slate-600 mb-2" for="email">email</label>
+            <label class="block text-sm font-semibold text-slate-600 mb-2" for="email">Email</label>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                     <i class="fas fa-user"></i>
@@ -50,7 +50,6 @@ LAYOUT  : layouts/guest.blade.php
         <div class="mb-7">
             <div class="flex items-center justify-between mb-2">
                 <label class="text-sm font-semibold text-slate-600" for="password">Password</label>
-                <a href="#" class="text-xs text-teal hover:underline">Lupa password?</a>
             </div>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">

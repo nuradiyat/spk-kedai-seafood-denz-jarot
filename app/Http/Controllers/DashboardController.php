@@ -11,19 +11,60 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /**
+         * =====================================
+         * TOTAL DATA
+         * =====================================
+         */
         $totalKaryawan = Karyawan::count();
 
         $totalKriteria = Kriteria::count();
 
         $totalPenilaian = Penilaian::count();
 
-        $penerimaBonus = HasilSaw::where('status_bonus', 'Diterima')
-            ->count();
+        /**
+         * =====================================
+         * AMBIL HASIL SAW TERAKHIR
+         * =====================================
+         */
+        $lastHasil = HasilSaw::latest()->first();
 
-        $ranking = HasilSaw::with('karyawan')
-            ->orderBy('ranking')
-            ->take(5)
-            ->get();
+        /**
+         * =====================================
+         * JIKA BELUM ADA HASIL
+         * =====================================
+         */
+        if (!$lastHasil) {
+
+            $penerimaBonus = 0;
+
+            $ranking = collect();
+
+        } else {
+
+            /**
+             * =====================================
+             * TOTAL PENERIMA BONUS
+             * =====================================
+             */
+            $penerimaBonus = HasilSaw::where(
+                    'penilaian_id',
+                    $lastHasil->penilaian_id
+                )
+                ->where('status_bonus', 'Diterima')
+                ->count();
+
+            /**
+             * =====================================
+             * TOP RANKING KARYAWAN
+             * =====================================
+             */
+            $ranking = HasilSaw::with('karyawan')
+                ->where('penilaian_id', $lastHasil->penilaian_id)
+                ->orderBy('ranking', 'asc')
+                ->take(5)
+                ->get();
+        }
 
         return view('pages.dashboard.index', compact(
             'totalKaryawan',
