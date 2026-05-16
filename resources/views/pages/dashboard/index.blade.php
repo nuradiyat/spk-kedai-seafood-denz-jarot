@@ -10,7 +10,7 @@ Controller: DashboardController@index
 
 @section('title', 'Dashboard — SPK Denz Jarot')
 @section('page-title', 'Dashboard')
-@section('page-subtitle', 'Ringkasan data penilaian karyawan periode berjalan')
+@section('page-subtitle', 'SPK Bonus Karyawan — Denz Jarot Seafood')
 
 @section('content')
 
@@ -57,7 +57,7 @@ Controller: DashboardController@index
             </div>
             <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Total Penilaian</p>
             <div class="font-heading font-bold text-ocean text-3xl">
-                {{ $totalPenilaian ?? 0 }} 
+                {{ $totalPenilaian ?? 0 }}
             </div>
             <p class="text-slate-400 text-xs mt-1.5">dalam periode berjalan</p>
         </div>
@@ -134,8 +134,8 @@ Controller: DashboardController@index
                                     <div class="flex items-center gap-2.5">
                                         <span
                                             class="w-8 h-8 rounded-lg flex items-center justify-center
-                                             text-white text-[11px] font-bold font-heading shrink-0
-                                             bg-gradient-to-br {{ $item->karyawan->warna ?? 'from-slate-400 to-slate-600' }}">
+                                          text-white text-[11px] font-bold font-heading shrink-0
+                                            bg-gradient-to-br from-ocean to-teal">
                                             {{ strtoupper(substr($item->karyawan->nama, 0, 2)) }}
                                         </span>
                                         <span class="font-semibold text-slate-800">{{ $item->karyawan->nama }}</span>
@@ -154,7 +154,7 @@ Controller: DashboardController@index
                                 </td>
                                 <td class="px-3 py-3">
                                     @include('components.badges.status', [
-                                        'status' => $item->penerima_bonus ? 'bonus' : 'pertimbangan',
+                                        'status' => $item->status_bonus == 'Diterima' ? 'bonus' : 'pertimbangan',
                                     ])
                                 </td>
                             </tr>
@@ -189,7 +189,7 @@ Controller: DashboardController@index
                             <p class="text-xs font-medium text-slate-700 mb-1 truncate">{{ $k->nama }}</p>
                             <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div class="h-full rounded-full bar {{ $palette[$idx % 5] }}"
-                                    style="width:{{ $k->bobot * 100 }}%"></div>
+                                    style="width:{{ $k->bobot }}%"></div>
                             </div>
                         </div>
                         <span class="text-xs font-bold text-slate-600 min-w-[38px] text-right">
