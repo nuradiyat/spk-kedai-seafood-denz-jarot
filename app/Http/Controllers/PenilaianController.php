@@ -53,17 +53,21 @@ class PenilaianController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'periode' => 'required|string',
-            'nilai'   => 'required|array',
+            'periode'            => 'required|string',
+            'tanggal_penilaian'  => 'required|date',
+            'nilai'              => 'required|array',
         ]);
 
         $penilaian = Penilaian::create([
-            'user_id' => Auth::id(),
-            'periode' => $request->periode,
+            'user_id'            => Auth::id(),
+            'periode'            => $request->periode,
+            'tanggal_penilaian'  => $request->tanggal_penilaian,
         ]);
 
         foreach ($request->nilai as $karyawanId => $kriteriaData) {
+
             foreach ($kriteriaData as $kriteriaId => $nilai) {
+
                 DetailPenilaian::create([
                     'penilaian_id' => $penilaian->id,
                     'karyawan_id'  => $karyawanId,
@@ -152,20 +156,24 @@ class PenilaianController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'periode' => 'required|string',
-            'nilai'   => 'required|array',
+            'periode'            => 'required|string',
+            'tanggal_penilaian'  => 'required|date',
+            'nilai'              => 'required|array',
         ]);
 
         $penilaian = Penilaian::findOrFail($id);
 
         $penilaian->update([
-            'periode' => $request->periode,
+            'periode'            => $request->periode,
+            'tanggal_penilaian'  => $request->tanggal_penilaian,
         ]);
 
         $penilaian->detailPenilaians()->delete();
 
         foreach ($request->nilai as $karyawanId => $kriteriaData) {
+
             foreach ($kriteriaData as $kriteriaId => $nilai) {
+
                 DetailPenilaian::create([
                     'penilaian_id' => $penilaian->id,
                     'karyawan_id'  => $karyawanId,

@@ -19,112 +19,177 @@ $nilaiLama : array nilai yang sudah ada (untuk edit)
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-5">
 
     <div class="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+
         <div class="w-8 h-8 rounded-lg bg-ocean/10 flex items-center justify-center shrink-0">
             <i class="fas fa-calendar-alt text-ocean text-sm"></i>
         </div>
-        <h3 class="font-heading font-bold text-ocean text-[15px]">Informasi Periode</h3>
+
+        <h3 class="font-heading font-bold text-ocean text-[15px]">
+            Informasi Periode
+        </h3>
+
     </div>
 
-    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
 
-        {{-- Periode --}}
+        {{-- PERIODE --}}
         <div>
+
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Periode Penilaian <span class="text-red-400">*</span>
+                Periode Penilaian
+                <span class="text-red-400">*</span>
             </label>
 
-            <input type="month" name="periode" value="{{ old('periode', $penilaian->periode ?? now()->format('Y-m')) }}"
+            <input
+                type="month"
+                name="periode"
+                value="{{ old('periode', $penilaian->periode ?? now()->format('Y-m')) }}"
                 {{ !empty($penilaian) ? 'readonly' : '' }}
+                required
                 class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-sand
-                          text-slate-900 text-sm focus:outline-none focus:border-teal focus:bg-white
-                          transition-all
-                          {{ !empty($penilaian) ? 'opacity-70 cursor-not-allowed' : '' }}"
-                required>
+                text-slate-900 text-sm focus:outline-none focus:border-teal focus:bg-white
+                transition-all
+                {{ !empty($penilaian) ? 'opacity-70 cursor-not-allowed' : '' }}"
+            >
 
-            @if (!empty($penilaian))
-                <p class="text-xs text-slate-400 mt-1.5">
-                    <i class="fas fa-lock mr-1"></i> Periode tidak dapat diubah
-                </p>
-            @endif
+            @error('periode')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+
         </div>
 
-        {{-- Keterangan --}}
+        {{-- TANGGAL PENILAIAN --}}
         <div>
+
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                Tanggal Penilaian
+                <span class="text-red-400">*</span>
+            </label>
+
+            <input
+                type="date"
+                name="tanggal_penilaian"
+                value="{{ old('tanggal_penilaian', $penilaian->tanggal_penilaian ?? now()->format('Y-m-d')) }}"
+                required
+                class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-sand
+                text-slate-900 text-sm focus:outline-none focus:border-teal focus:bg-white
+                transition-all"
+            >
+
+            @error('tanggal_penilaian')
+                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+            @enderror
+
+        </div>
+
+        {{-- KETERANGAN --}}
+        <div>
+
             <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                 Keterangan
             </label>
 
-            <input type="text" name="keterangan" value="{{ old('keterangan', $penilaian->keterangan ?? '') }}"
+            <input
+                type="text"
+                name="keterangan"
+                value="{{ old('keterangan', $penilaian->keterangan ?? '') }}"
                 placeholder="cth: Penilaian bonus semester 1"
                 class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-sand
-                          text-slate-900 text-sm focus:outline-none focus:border-teal focus:bg-white
-                          transition-all">
+                text-slate-900 text-sm focus:outline-none focus:border-teal focus:bg-white
+                transition-all"
+            >
+
         </div>
 
     </div>
+
 </div>
 
-{{-- BAGIAN 2: SKALA NILAI (TETAP) --}}
+{{-- BAGIAN 2: SKALA NILAI --}}
 <div class="flex flex-wrap gap-2 mb-5">
-    <span class="text-xs font-semibold text-slate-500 self-center mr-1">Skala Nilai:</span>
+
+    <span class="text-xs font-semibold text-slate-500 self-center mr-1">
+        Skala Nilai:
+    </span>
 
     @foreach ([
-        1 => ['Sangat Buruk', 'bg-red-100 text-red-700 border-red-200'],
-        2 => ['Buruk', 'bg-orange-100 text-orange-700 border-orange-200'],
-        3 => ['Cukup', 'bg-amber-100 text-amber-700 border-amber-200'],
-        4 => ['Baik', 'bg-teal-bg text-teal-700 border-teal-200'],
-        5 => ['Sangat Baik', 'bg-green-50 text-green-700 border-green-200'],
-    ] as $val => [$label, $cls])
-        <span
-            class="inline-flex items-center gap-1.5 {{ $cls }} border px-3 py-1 rounded-full text-xs font-semibold">
-            <span class="font-heading font-bold">{{ $val }}</span>
-            <span>= {{ $label }}</span>
+        1 => ['Sangat Buruk','bg-red-100 text-red-700 border-red-200'],
+        2 => ['Buruk','bg-orange-100 text-orange-700 border-orange-200'],
+        3 => ['Cukup','bg-amber-100 text-amber-700 border-amber-200'],
+        4 => ['Baik','bg-teal-bg text-teal-700 border-teal-200'],
+        5 => ['Sangat Baik','bg-green-50 text-green-700 border-green-200']
+    ] as $val => [$label,$cls])
+
+        <span class="inline-flex items-center gap-1.5 {{ $cls }} border px-3 py-1 rounded-full text-xs font-semibold">
+
+            <span class="font-heading font-bold">
+                {{ $val }}
+            </span>
+
+            <span>
+                = {{ $label }}
+            </span>
+
         </span>
+
     @endforeach
+
 </div>
 
 {{-- BAGIAN 3: MATRIX NILAI --}}
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+
         <div class="flex items-center gap-3">
+
             <div class="w-8 h-8 rounded-lg bg-ocean/10 flex items-center justify-center shrink-0">
                 <i class="fas fa-table text-ocean text-sm"></i>
             </div>
 
             <div>
-                <h3 class="font-heading font-bold text-ocean text-[15px]">Input Nilai Karyawan</h3>
+
+                <h3 class="font-heading font-bold text-ocean text-[15px]">
+                    Input Nilai Karyawan
+                </h3>
+
                 <p class="text-slate-400 text-xs mt-0.5">
                     {{ $karyawans->count() }} karyawan × {{ $kriterias->count() }} kriteria
                 </p>
+
             </div>
+
         </div>
 
         <span class="text-xs text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg">
             Isi semua kolom nilai
         </span>
+
     </div>
 
     <div class="overflow-x-auto">
 
-        <table class="w-full text-sm" style="min-width: {{ 200 + $kriterias->count() * 120 }}px">
+        <table class="w-full text-sm" style="min-width: {{ 200 + $kriterias->count()*120 }}px">
 
             <thead class="bg-slate-50 border-b border-slate-200">
+
                 <tr>
 
-                    <th
-                        class="text-left text-[11px] font-semibold text-slate-400 uppercase px-6 py-3.5 sticky left-0 bg-slate-50 min-w-[200px]">
+                    <th class="text-left text-[11px] font-semibold text-slate-400 uppercase px-6 py-3.5 sticky left-0 bg-slate-50 min-w-[200px]">
                         Karyawan
                     </th>
 
-                    @foreach ($kriterias as $k)
-                        <th
-                            class="text-center text-[11px] font-semibold text-slate-400 uppercase px-4 py-3.5 min-w-[110px]">
+                    @foreach($kriterias as $k)
 
-                            <span
-                                class="inline-block mb-1 px-2 py-0.5 rounded-full text-[9px] font-bold
-                                {{ $k->tipe === 'benefit' ? 'bg-teal-bg text-teal-700' : 'bg-red-50 text-red-600' }}">
+                        <th class="text-center text-[11px] font-semibold text-slate-400 uppercase px-4 py-3.5 min-w-[110px]">
+
+                            <span class="inline-block mb-1 px-2 py-0.5 rounded-full text-[9px] font-bold
+                            {{ strtolower(trim($k->tipe))=='benefit'
+                            ? 'bg-teal-bg text-teal-700'
+                            : 'bg-red-50 text-red-600' }}">
+
                                 {{ strtoupper($k->tipe) }}
+
                             </span>
 
                             <br>
@@ -136,7 +201,7 @@ $nilaiLama : array nilai yang sudah ada (untuk edit)
                             <br>
 
                             <span class="text-[10px] text-slate-400">
-                                {{ \Illuminate\Support\Str::limit($k->nama, 15) }}
+                                {{ \Illuminate\Support\Str::limit($k->nama,15) }}
                             </span>
 
                             <br>
@@ -146,59 +211,72 @@ $nilaiLama : array nilai yang sudah ada (untuk edit)
                             </span>
 
                         </th>
+
                     @endforeach
 
                 </tr>
+
             </thead>
 
             <tbody>
 
-                @foreach ($karyawans as $kar)
+                @foreach($karyawans as $kar)
+
                     <tr class="border-b border-slate-50 hover:bg-slate-50/50">
 
-                        {{-- KARYAWAN --}}
                         <td class="px-6 py-3.5 sticky left-0 bg-white">
 
                             <div class="flex items-center gap-3">
 
-                                <span
-                                    class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold
-                                    bg-gradient-to-br {{ $kar->warna ?? 'from-slate-400 to-slate-600' }}">
-                                    {{ strtoupper(substr($kar->nama_karyawan, 0, 2)) }}
+                                <span class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold
+                                bg-gradient-to-br {{ $kar->warna ?? 'from-slate-400 to-slate-600' }}">
+
+                                    {{ strtoupper(substr($kar->nama_karyawan,0,2)) }}
+
                                 </span>
 
                                 <div>
+
                                     <p class="font-semibold text-slate-800 text-sm">
                                         {{ $kar->nama_karyawan }}
                                     </p>
+
                                     <p class="text-[11px] text-slate-400">
                                         {{ $kar->jabatan ?? '—' }}
                                     </p>
+
                                 </div>
 
                             </div>
 
                         </td>
 
-                        {{-- NILAI --}}
-                        @foreach ($kriterias as $k)
+                        @foreach($kriterias as $k)
+
                             @php
                                 $existingValue = $nilaiLama[$kar->id][$k->id] ?? null;
                             @endphp
 
                             <td class="px-4 py-3.5 text-center">
 
-                                <input type="number" name="nilai[{{ $kar->id }}][{{ $k->id }}]"
-                                    value="{{ old("nilai.$kar->id.$k->id", $existingValue) }}" min="1"
-                                    max="5" step="1"
+                                <input
+                                    type="number"
+                                    name="nilai[{{ $kar->id }}][{{ $k->id }}]"
+                                    value="{{ old("nilai.$kar->id.$k->id",$existingValue) }}"
+                                    min="1"
+                                    max="5"
+                                    required
                                     class="w-16 h-10 text-center rounded-xl border-2 border-slate-200 bg-sand
-                                        text-slate-900 text-sm font-bold focus:outline-none focus:border-teal"
-                                    oninput="highlightScore(this)" required>
+                                    text-slate-900 text-sm font-bold
+                                    focus:outline-none focus:border-teal"
+                                >
 
                             </td>
+
                         @endforeach
 
                     </tr>
+
                 @endforeach
 
             </tbody>
@@ -206,4 +284,5 @@ $nilaiLama : array nilai yang sudah ada (untuk edit)
         </table>
 
     </div>
+
 </div>
