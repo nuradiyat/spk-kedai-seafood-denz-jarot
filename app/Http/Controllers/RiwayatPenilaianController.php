@@ -3,63 +3,84 @@
 namespace App\Http\Controllers;
 
 use App\Models\Penilaian;
-use App\Models\HasilSaw;
 
 class RiwayatPenilaianController extends Controller
 {
     /**
-     * 📌 Tampilkan seluruh riwayat penilaian
+     * =========================================
+     * LIST RIWAYAT PENILAIAN
+     * =========================================
      */
     public function index()
     {
-        $penilaians = Penilaian::with([
+        $riwayat = Penilaian::with([
             'user',
             'hasilSaws'
         ])
             ->latest()
             ->get();
 
-        return view('pages.riwayat.index', compact('penilaians'));
+        return view('pages.riwayat.index', compact('riwayat'));
     }
 
     /**
-     * 📌 Detail riwayat penilaian
+     * =========================================
+     * DETAIL RIWAYAT + HASIL SAW FINAL
+     * =========================================
      */
-    public function detail($id)
+    public function show($id)
     {
         $penilaian = Penilaian::with([
             'user',
+            'hasilSaws.karyawan',
             'detailPenilaians.karyawan',
-            'detailPenilaians.kriteria',
-            'hasilSaws.karyawan'
+            'detailPenilaians.kriteria'
         ])->findOrFail($id);
 
-        return view('pages.riwayat.detail', compact('penilaian'));
+        return view('pages.riwayat.show', compact('penilaian'));
     }
 
     /**
-     * 📌 Hapus riwayat penilaian
+     * =========================================
+     * EXPORT LAPORAN
+     * =========================================
+     */
+    public function export($id)
+    {
+        $penilaian = Penilaian::with([
+            'user',
+            'hasilSaws.karyawan',
+            'detailPenilaians.karyawan',
+            'detailPenilaians.kriteria'
+        ])->findOrFail($id);
+
+        /**
+         * NOTE:
+         * idealnya nanti diganti:
+         * - Laravel Excel
+         * - atau DomPDF
+         */
+        return view('pages.riwayat.export', compact('penilaian'));
+    }
+
+    /**
+     * =========================================
+     * HAPUS RIWAYAT PENILAIAN
+     * =========================================
      */
     public function destroy($id)
     {
         $penilaian = Penilaian::findOrFail($id);
 
+        /**
+         * Hapus semua relasi terkait
+         */
+        $penilaian->hasilSaws()->delete();
+        $penilaian->detailPenilaians()->delete();
         $penilaian->delete();
 
         return redirect()
             ->route('riwayat.index')
-            ->with('success', 'Riwayat penilaian berhasil dihapus');
-    }
-
-    /**
-     * 📌 Export laporan
-     */
-    public function export($id)
-    {
-        $penilaian = Penilaian::with([
-            'hasilSaws.karyawan'
-        ])->findOrFail($id);
-
-        return view('pages.riwayat.export', compact('penilaian'));
+            ->with('success', 'Riwayat berhasil dihapus');
     }
 }

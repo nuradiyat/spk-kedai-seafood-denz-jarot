@@ -8,17 +8,32 @@ use Illuminate\Http\Request;
 class KaryawanController extends Controller
 {
     /**
-     * Tampilkan semua karyawan
+     * =====================================
+     * LIST KARYAWAN + SEARCH
+     * =====================================
      */
-    public function index()
+    public function index(Request $request)
     {
-        $karyawans = Karyawan::latest()->get();
+        $keywordSearch = $request->search;
 
-        return view('pages.karyawan.index', compact('karyawans'));
+        $karyawans = Karyawan::query()
+            ->when($keywordSearch, function ($query) use ($keywordSearch) {
+                $query->search($keywordSearch);
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('pages.karyawan.index', compact(
+            'karyawans',
+            'keywordSearch'
+        ));
     }
 
     /**
-     * Form tambah
+     * =====================================
+     * FORM CREATE
+     * =====================================
      */
     public function create()
     {
@@ -26,7 +41,9 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Simpan data
+     * =====================================
+     * STORE
+     * =====================================
      */
     public function store(Request $request)
     {
@@ -45,7 +62,9 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Detail karyawan
+     * =====================================
+     * SHOW
+     * =====================================
      */
     public function show($id)
     {
@@ -55,7 +74,9 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Form edit
+     * =====================================
+     * EDIT
+     * =====================================
      */
     public function edit($id)
     {
@@ -65,7 +86,9 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Update data
+     * =====================================
+     * UPDATE
+     * =====================================
      */
     public function update(Request $request, $id)
     {
@@ -82,16 +105,17 @@ class KaryawanController extends Controller
 
         return redirect()
             ->route('karyawan.index')
-            ->with('success', 'Data karyawan berhasil diupdate');
+            ->with('success', 'Data karyawan berhasil diperbarui');
     }
 
     /**
-     * Hapus data
+     * =====================================
+     * DELETE
+     * =====================================
      */
     public function destroy($id)
     {
         $karyawan = Karyawan::findOrFail($id);
-
         $karyawan->delete();
 
         return redirect()

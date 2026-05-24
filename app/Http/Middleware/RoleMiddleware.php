@@ -20,9 +20,11 @@ class RoleMiddleware
         }
 
         // Cek role user
-        if (Auth::user()->role !== $role) {
+        if (
+            Auth::user()->role !== 'admin' &&
+            Auth::user()->role !== 'owner'
+        ) {
 
-            // redirect
             return redirect()->back()->with([
                 'error' => 'Anda tidak memiliki akses ke halaman ini',
             ]);

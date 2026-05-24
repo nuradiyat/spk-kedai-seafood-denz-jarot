@@ -52,6 +52,13 @@ FUNGSI  : Sidebar khusus owner
             Data Karyawan
         </a>
 
+        <a href="{{ route('kriteria.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-white/55 hover:bg-white/[.07] hover:text-white transition-all">
+
+            <i class="fas fa-sliders-h w-4 text-center shrink-0"></i>
+            Kriteria & Bobot
+        </a>
+
         {{-- PENILAIAN --}}
         <p class="text-white/30 text-[10px] font-semibold tracking-widest uppercase px-2 pt-4 pb-1.5">
             Penilaian

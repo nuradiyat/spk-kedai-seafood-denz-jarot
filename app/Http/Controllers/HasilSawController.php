@@ -2,105 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\HasilSaw;
 use App\Models\Penilaian;
+use App\Models\HasilSaw;
 use App\Services\SAWService;
 
 class HasilSawController extends Controller
 {
-    /**
-     * 📌 Service SAW
-     */
-    protected $saw;
+    // ini dugunkan untuk meng-inject SAWService ke dalam controller, 
+    // sehingga kita bisa menggunakan metode calculate() di dalamnya untuk menjalankan proses SAW.
+    protected $sawService;
 
-    /**
-     * 📌 Dependency Injection
-     */
-    public function __construct(SAWService $saw)
+    // ini digunkan untuk menginisialisasi SAWService ketika controller ini dibuat. 
+    // Dengan menggunakan dependency injection, kita memastikan bahwa controller ini memiliki 
+    // akses ke semua metode yang disediakan oleh SAWService, terutama metode calculate() yang digunakan 
+    //untuk menjalankan proses SAW pada penilaian tertentu.
+    public function __construct(SAWService $sawService)
     {
-        $this->saw = $saw;
+        $this->sawService = $sawService;
     }
 
     /**
-     * 📌 Tampilkan hasil ranking
+     * =========================================
+     * HALAMAN HASIL SAW
+     * =========================================
      */
     public function index()
     {
-        $hasils = HasilSaw::with([
-            'karyawan',
-            'penilaian'
-        ])
-            ->orderBy('ranking', 'asc')
-            ->latest()
-            ->get();
+        /**
+         * Ambil semua penilaian
+         * (yang bisa diproses SAW)
+         */
+        $penilaians = Penilaian::with([
+            'user',
+            'detailPenilaians'
+        ])->latest()->get();
 
-        return view('pages.hasil.index', compact('hasils'));
+        return view('pages.hasil.index', compact('penilaians'));
     }
 
     /**
-     * 📌 Jalankan perhitungan SAW
+     * =========================================
+     * PROSES SAW
+     * =========================================
      */
-    public function proses($id)
+    public function proses($penilaianId)
     {
         /**
-         * =========================
-         * VALIDASI PENILAIAN
-         * =========================
+         * Jalankan SAW SERVICE
+         * (SEMUA LOGIC ADA DI SERVICE)
          */
-        $penilaian = Penilaian::findOrFail($id);
-
-        /**
-         * =========================
-         * HITUNG SAW
-         * =========================
-         */
-        $this->saw->calculate($penilaian->id);
+        $result = $this->sawService->calculate($penilaianId);
 
         return redirect()
             ->route('hasil.index')
-            ->with('success', 'Perhitungan SAW berhasil dilakukan');
+            ->with('success', 'Perhitungan SAW berhasil dijalankan');
     }
 
     /**
-     * 📌 Detail proses SAW
+     * =========================================
+     * DETAIL HASIL SAW
+     * =========================================
      */
-    public function detail($id)
+    public function show($penilaianId)
     {
-        /**
-         * =========================
-         * VALIDASI PENILAIAN
-         * =========================
-         */
-        $penilaian = Penilaian::findOrFail($id);
-
-        /**
-         * =========================
-         * HITUNG DETAIL SAW
-         * =========================
-         */
-        $hasil = $this->saw->hitung($penilaian->id);
-
-        return view('pages.hasil.detail', compact(
-            'hasil',
+        $hasil = HasilSaw::with([
+            'karyawan',
             'penilaian'
-        ));
-    }
-
-    /**
-     * 📌 Tampilan podium ranking
-     */
-    public function podium()
-    {
-        $topRank = HasilSaw::with('karyawan')
-            ->orderBy('ranking', 'asc')
-            ->take(3)
+        ])
+            ->where('penilaian_id', $penilaianId)
+            ->orderBy('ranking')
             ->get();
 
-        return view('pages.hasil.podium', compact('topRank'));
+        return view('pages.hasil.show', compact('hasil'));
     }
 
     /**
-     * 📌 Hapus hasil SAW
+     * =========================================
+     * HAPUS HASIL SAW
+     * =========================================
      */
     public function destroy($id)
     {

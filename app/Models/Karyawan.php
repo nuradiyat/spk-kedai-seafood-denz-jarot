@@ -29,4 +29,13 @@ class Karyawan extends Model
     {
         return $this->hasMany(HasilSaw::class);
     }
+
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->where(function ($q) use ($keyword) {
+            $q->where('nama_karyawan', 'like', "%{$keyword}%")
+                ->orWhere('jabatan', 'like', "%{$keyword}%")
+                ->orWhere('status', 'like', "%{$keyword}%");
+        });
+    }
 }

@@ -11,20 +11,40 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /**
+         * =====================================
+         * STATISTIK UTAMA
+         * =====================================
+         */
         $totalKaryawan = Karyawan::count();
-
         $totalKriteria = Kriteria::count();
-
         $totalPenilaian = Penilaian::count();
 
+        /**
+         * =====================================
+         * PENERIMA BONUS (VALID SAJA)
+         * =====================================
+         */
         $penerimaBonus = HasilSaw::where('status_bonus', 'Diterima')
+            ->whereNotNull('ranking')
             ->count();
 
+        /**
+         * =====================================
+         * TOP 3 RANKING
+         * =====================================
+         */
         $ranking = HasilSaw::with('karyawan')
-            ->orderBy('ranking')
-            ->take(3)
+            ->whereNotNull('ranking')
+            ->orderBy('ranking', 'asc')
+            ->limit(3)
             ->get();
 
+        /**
+         * =====================================
+         * RETURN VIEW
+         * =====================================
+         */
         return view('pages.dashboard.index', compact(
             'totalKaryawan',
             'totalKriteria',

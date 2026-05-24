@@ -5,7 +5,7 @@ FUNGSI  : Komponen alert notifikasi error/validasi (dummy/statis).
           Di production: tampil via session('error') atau $errors.
 ================================================================
 --}}
-{{-- Uncomment saat integrasi backend:
+
 @if (session('error') || $errors->any())
 <div class="mb-5 flex items-start gap-3 bg-red-50 border border-red-200
             text-red-700 rounded-xl px-4 py-3 text-sm">
@@ -19,4 +19,4 @@ FUNGSI  : Komponen alert notifikasi error/validasi (dummy/statis).
     </button>
 </div>
 @endif
---}}
+

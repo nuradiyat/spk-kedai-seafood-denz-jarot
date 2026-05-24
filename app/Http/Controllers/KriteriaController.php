@@ -14,7 +14,13 @@ class KriteriaController extends Controller
     {
         $kriterias = Kriteria::latest()->get();
 
-        return view('pages.kriteria.index', compact('kriterias'));
+        // total semua bobot
+        $totalBobot = $kriterias->sum('bobot') * 100;
+
+        return view('pages.kriteria.index', compact(
+            'kriterias',
+            'totalBobot'
+        ));
     }
 
     /**
