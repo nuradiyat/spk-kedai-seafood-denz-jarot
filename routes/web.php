@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role'])->group(function () {
 
     /**
      * =========================================
@@ -102,7 +102,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin,owner'])->group(function () {
+Route::middleware(['auth', 'role'])->group(function () {
 
     /**
      * =========================================
