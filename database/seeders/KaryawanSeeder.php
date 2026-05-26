@@ -10,9 +10,11 @@ class KaryawanSeeder extends Seeder
     public function run(): void
     {
         Karyawan::insert([
-            ['nama_karyawan' => 'Andi'],
-            ['nama_karyawan' => 'Budi'],
-            ['nama_karyawan' => 'Citra'],
+            ['nama_karyawan' => 'Imel'],
+            ['nama_karyawan' => 'Sari'],
+            ['nama_karyawan' => 'Maliah'],
+            ['nama_karyawan' => 'Riki'],
+            ['nama_karyawan' => 'Ilham'],
         ]);
     }
 }

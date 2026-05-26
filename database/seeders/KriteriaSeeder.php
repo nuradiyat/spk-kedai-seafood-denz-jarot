@@ -12,26 +12,32 @@ class KriteriaSeeder extends Seeder
         Kriteria::insert([
     [
         'kode' => 'C1',
-        'nama_kriteria' => 'Pencapaian Target',
-        'bobot' => 0.30,
+        'nama_kriteria' => 'Tingkat Kehadiran',
+        'bobot' => 0.25,
         'jenis' => 'benefit'
     ],
     [
         'kode' => 'C2',
         'nama_kriteria' => 'Produktivitas Kerja',
-        'bobot' => 0.30,
+        'bobot' => 0.25,
         'jenis' => 'benefit'
     ],
     [
         'kode' => 'C3',
-        'nama_kriteria' => 'Kehadiran',
+        'nama_kriteria' => 'Kemampuan Kerja Sama Tim',
         'bobot' => 0.20,
         'jenis' => 'benefit'
     ],
     [
         'kode' => 'C4',
-        'nama_kriteria' => 'Pelayanan Pelanggan',
-        'bobot' => 0.20,
+        'nama_kriteria' => 'Tanggung Jawab Pekerjaan',
+        'bobot' => 0.15,
+        'jenis' => 'benefit'
+    ],
+    [
+        'kode' => 'C5',
+        'nama_kriteria' => 'Masa Kerja Karyawan',
+        'bobot' => 0.15,
         'jenis' => 'benefit'
     ],
 ]);

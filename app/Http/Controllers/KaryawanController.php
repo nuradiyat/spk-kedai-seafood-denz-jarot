@@ -10,9 +10,20 @@ class KaryawanController extends Controller
     /**
      * Tampilkan semua karyawan
      */
-    public function index()
+    public function index(Request $request)
     {
-        $karyawans = Karyawan::latest()->get();
+        $query = Karyawan::query();
+
+        // 🔍 SEARCH LOGIC
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_karyawan', 'like', '%' . $request->search . '%')
+                    ->orWhere('jabatan', 'like', '%' . $request->search . '%')
+                    ->orWhere('id', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $karyawans = $query->latest()->paginate(10);
 
         return view('pages.karyawan.index', compact('karyawans'));
     }
