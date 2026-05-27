@@ -28,30 +28,30 @@ Route: GET /karyawan/create → karyawan.create
         </div>
     </div>
 
-    <div class="max-w-2xl">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
+    {{-- Form tambah karyawan --}}
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 overflow-hidden">
 
-            <form method="POST" action="{{ route('karyawan.store') }}">
-                @csrf
+        <form method="POST" action="{{ route('karyawan.store') }}">
+            @csrf
 
-                {{-- Field form dari partial --}}
-                @include('pages.karyawan.partials.form')
+            {{-- Field form dari partial --}}
+            @include('pages.karyawan.partials.form')
 
-                {{-- Tombol aksi --}}
-                <div class="flex items-center gap-3 pt-6 mt-2 border-t border-slate-100">
-                    <button type="submit"
-                        class="inline-flex items-center gap-2 bg-gradient-to-r from-ocean to-ocean-lt
+            {{-- Tombol aksi --}}
+            <div class="flex items-center gap-3 pt-6 mt-2 border-t border-slate-100">
+                <button type="submit"
+                    class="inline-flex items-center gap-2 bg-gradient-to-r from-ocean to-ocean-lt
                                text-white text-sm font-semibold px-6 py-2.5 rounded-xl
                                hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-                        <i class="fas fa-save text-xs"></i> Simpan Karyawan
-                    </button>
-                    <a href="{{ route('karyawan.index') }}"
-                        class="text-sm text-slate-500 border border-slate-200 px-5 py-2.5
+                    <i class="fas fa-save text-xs"></i> Simpan Karyawan
+                </button>
+                <a href="{{ route('karyawan.index') }}"
+                    class="text-sm text-slate-500 border border-slate-200 px-5 py-2.5
                           rounded-xl hover:bg-slate-50 transition-colors">Batal</a>
-                </div>
+            </div>
 
-            </form>
-        </div>
+        </form>
     </div>
+
 
 @endsection

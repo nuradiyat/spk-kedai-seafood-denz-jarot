@@ -27,10 +27,10 @@ LAYOUT  : layouts/guest.blade.php
     <p class="text-slate-400 text-sm mb-8">Masuk untuk mengelola penilaian karyawan</p>
 
     {{-- ===== ALERT ERROR (dummy) ===== --}}
-    {{-- @include('components.alerts.error') --}}
+    @include('components.alerts.error')
 
     {{-- ===== FORM LOGIN ===== --}}
-    <form action="{{ route('login.process') }}" method="POST">
+    <form action="{{ route('login.process' ) }}" method="POST">
         @csrf
         {{-- Input email --}}
         <div class="mb-5">

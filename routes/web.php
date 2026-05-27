@@ -58,7 +58,12 @@ Route::middleware(['auth', 'role:admin,owner'])->group(function () {
     Route::get('/hasil', [HasilSawController::class, 'index'])
         ->name('hasil.index');
 
-    Route::get('/hasil/{penilaian}/detail', [HasilSawController::class, 'detail'])
+    // bagian sini eror sat masuk das dasboar index.blade.php  <a href="{{ route('hasil.index') }}" 
+    // tidak bisa masuk karena butuh {{ $penilai->id }} jadi harusnya route nya gini route('hasil.index', $penilai->id) 
+    //tapi karena di dashboard index.blade.php belum ada variabel $penilai jadi error, jadi untuk sementara saya buat route hasil.index tanpa parameter dulu, nanti kalau mau masukin parameter tinggal hapus aja route hasil.index yang tanpa parameter terus uncomment route hasil.index yang dengan parameter terus masukin variabel $penilai di dashboard index.blade.php
+    // Route::get('/hasil/{penilaian}/detail', [HasilSawController::class, 'detail'])
+    //     ->name('hasil.detail');
+    Route::get('/hasil/detail', [HasilSawController::class, 'detail'])
         ->name('hasil.detail');
 
     Route::post('/hasil/{penilaian}/proses', [HasilSawController::class, 'proses'])

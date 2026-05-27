@@ -43,6 +43,12 @@ Komponen tabel daftar karyawan reusable.
         {{-- ===== BODY TABEL ===== --}}
         <tbody>
 
+            {{-- Jika ada data kriteria maka tampilkan
+            palkai metode @forelse ( as )
+                ini menampilkan data
+            @empty
+                ini tidak ada data 
+            @endforelse --}}
             @forelse($karyawans as $i => $k)
                 <tr class="border-b border-slate-50 last:border-0 tbl-row">
 
@@ -79,7 +85,7 @@ Komponen tabel daftar karyawan reusable.
 
                     {{-- Tanggal Masuk --}}
                     <td class="px-3 py-3.5 text-slate-500 text-xs hidden md:table-cell">
-                        {{ $k->tanggal_masuk ? \Carbon\Carbon::parse($k->tanggal_masuk)->translatedFormat('M Y') : '—' }}
+                        {{ $k->tanggal_masuk }}
                     </td>
 
                     {{-- Status --}}

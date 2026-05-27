@@ -23,6 +23,9 @@ class KaryawanController extends Controller
             });
         }
 
+        // panggil fungsi $query->latest() akan menggunakan Karyawan::qauery() yang sudah di filter berdasarkan search, 
+        // jadi kalau misalnya search nya kosong maka akan menampilkan semua karyawan, tapi kalau misalnya search
+        // lalu kirimkan data karyawan yang sudah di filter ke view index.blade.php
         $karyawans = $query->latest()->paginate(10);
 
         return view('pages.karyawan.index', compact('karyawans'));
@@ -101,6 +104,7 @@ class KaryawanController extends Controller
      */
     public function destroy($id)
     {
+        // Cari karyawan berdasarkan ID, jika tidak ditemukan maka akan menampilkan error 404
         $karyawan = Karyawan::findOrFail($id);
 
         $karyawan->delete();

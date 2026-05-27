@@ -9,9 +9,9 @@ Route: GET /karyawan/{id}/edit → karyawan.edit
 --}}
 @extends('layouts.app')
 
-@section('title', 'Edit Karyawan — ' . $karyawan->nama)
+@section('title', 'Edit Karyawan — ' . $karyawan->nama_karyawan)
 @section('page-title', 'Edit Karyawan')
-@section('page-subtitle', 'Ubah data karyawan — ' . $karyawan->nama)
+@section('page-subtitle', 'Ubah data karyawan — ' . $karyawan->nama_karyawan)
 
 @section('content')
 
@@ -23,35 +23,35 @@ Route: GET /karyawan/{id}/edit → karyawan.edit
         </a>
         <div>
             <h2 class="font-heading font-bold text-ocean text-xl">Edit Karyawan</h2>
-            <p class="text-slate-400 text-sm mt-0.5">{{ $karyawan->nama }}</p>
+            <p class="text-slate-400 text-sm mt-0.5">{{ $karyawan->nama_karyawan }}</p>
         </div>
     </div>
 
-    <div class="max-w-2xl">
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
 
-            <form method="POST" action="{{ route('karyawan.update', $karyawan->id) }}">
-                @csrf
-                @method('PUT')
+    {{-- Form edit karyawan --}}
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 overflow-auto">
 
-                {{-- Field form dari partial dengan data karyawan --}}
-                @include('pages.karyawan.partials.form', ['karyawan' => $karyawan])
+        <form method="POST" action="{{ route('karyawan.update', $karyawan->id) }}">
+            @csrf
+            @method('PUT')
 
-                {{-- Tombol aksi --}}
-                <div class="flex items-center gap-3 pt-6 mt-2 border-t border-slate-100">
-                    <button type="submit"
-                        class="inline-flex items-center gap-2 bg-gradient-to-r from-ocean to-ocean-lt
+            {{-- Field form dari partial dengan data karyawan --}}
+            @include('pages.karyawan.partials.form', ['karyawan' => $karyawan])
+
+            {{-- Tombol aksi --}}
+            <div class="flex items-center gap-3 pt-6 mt-2 border-t border-slate-100">
+                <button type="submit"
+                    class="inline-flex items-center gap-2 bg-gradient-to-r from-ocean to-ocean-lt
                                text-white text-sm font-semibold px-6 py-2.5 rounded-xl
                                hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-                        <i class="fas fa-save text-xs"></i> Simpan Perubahan
-                    </button>
-                    <a href="{{ route('karyawan.index') }}"
-                        class="text-sm text-slate-500 border border-slate-200 px-5 py-2.5
+                    <i class="fas fa-save text-xs"></i> Simpan Perubahan
+                </button>
+                <a href="{{ route('karyawan.index') }}"
+                    class="text-sm text-slate-500 border border-slate-200 px-5 py-2.5
                           rounded-xl hover:bg-slate-50 transition-colors">Batal</a>
-                </div>
+            </div>
 
-            </form>
-        </div>
+        </form>
     </div>
 
 @endsection
