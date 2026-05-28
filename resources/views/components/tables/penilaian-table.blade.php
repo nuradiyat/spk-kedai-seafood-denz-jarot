@@ -119,8 +119,10 @@
                                    w-9 h-9 rounded-xl
                                    bg-ocean/10 text-ocean
                                    font-bold text-sm">
-
-                            {{ $penilaian->total_karyawan }}
+                            {{-- tolong ambil penilaian buka relasi detailPenilaians yng ada di model penilaian
+                            ambil karyawan_id dan hitung yang unik(numerik)
+                            hitung total karyawan yang dinilai  --}}
+                            {{ $penilaian->detailPenilaians->pluck('karyawan_id')->unique()->count() }}
 
                         </span>
 
@@ -129,7 +131,7 @@
                     {{-- STATUS --}}
                     <td class="px-4 py-4">
 
-                        @if ($penilaian->is_processed)
+                        @if ($penilaian->status_perhitungan === 'sudah_diproses')
                             <span
                                 class="inline-flex items-center gap-1.5
                                        bg-teal-50 text-teal-700
@@ -172,13 +174,15 @@
 
                         <p class="text-slate-500 text-xs">
 
-                            {{ $penilaian->tanggal_penilaian_label }}
+                            {{ $penilaian->tanggal_penilaian }}
 
                         </p>
 
                         <p class="text-slate-400 text-[10px] mt-1">
-
-                            {{ $penilaian->jam_dibuat_label }}
+                            {{-- Fungsi diffForHumans() untuk mengubah waktu menjadi format yang lebih ramah
+                            defult sebelumnya itu created_at adalah 2026-05-28 16:54:33
+                            sesudah pakai diffForHumans() jadi 13 minutes ago  --}}
+                            {{ $penilaian->created_at->diffForHumans() }}
 
                         </p>
 

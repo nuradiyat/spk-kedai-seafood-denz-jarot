@@ -8,6 +8,7 @@ use App\Models\Kriteria;
 use App\Models\DetailPenilaian;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PenilaianController extends Controller
 {
@@ -69,7 +70,13 @@ class PenilaianController extends Controller
          */
         $request->validate([
             'periode' => 'required|string|max:255',
+            // ini di isi otomatis saat proses penilaian, jadi defaultnya "belum_diproses"
+            // nanti saat proses penilaian selesai, status_perhitungan di update menjadi "sudah_diproses"
+            // proces ini ada di route proses penilaian atau bagian show.blade.php jadi proses perhitungan dishni
+            // saat klick tombol proses penilaian, maka status_perhitungan di update menjadi "sudah_diproses"
+            // 'status_perhitungan' => 'required|string|max:255',
             'nilai'   => 'required|array',
+            'nilai.*.*' => 'required|numeric|min:0',
         ]);
 
         /**
@@ -78,7 +85,13 @@ class PenilaianController extends Controller
          * =========================
          */
         $penilaian = Penilaian::create([
-            'user_id'            => auth()->id(),
+            // TODO: Ganti dengan user yang sedang login
+            'user_id'            => Auth::id(),
+            // ini di isi otomatis saat proses penilaian, jadi defaultnya "belum_diproses"
+            // nanti saat proses penilaian selesai, status_perhitungan di update menjadi "sudah_diproses"
+            // proces ini ada di route proses penilaian atau bagian show.blade.php jadi proses perhitungan dishni
+            // saat klick tombol proses penilaian, maka status_perhitungan di update menjadi "sudah_diproses"
+            // 'status_perhitungan' => $request->status_perhitungan,
             'periode'            => $request->periode,
             'tanggal_penilaian'  => now(),
         ]);

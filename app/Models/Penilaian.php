@@ -11,6 +11,7 @@ class Penilaian extends Model
     protected $fillable = [
         'user_id',
         'periode',
+        'status_perhitungan',
         'tanggal_penilaian',
     ];
 
