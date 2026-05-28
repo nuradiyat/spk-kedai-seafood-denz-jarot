@@ -10,68 +10,77 @@ use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
 use App\Http\Controllers\RiwayatPenilaianController;
 
-/*
-|--------------------------------------------------------------------------
-| AUTH
-|--------------------------------------------------------------------------
-*/
 
-Route::get('/', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.process');
+// ROUTE UNTUK AUTENTIKASI
+Route::get('/', [AuthController::class, 'showLogin'])
+    ->name('login');
+
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.process');
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-/*
-|--------------------------------------------------------------------------
-| DASHBOARD (SEMUA USER LOGIN)
-|--------------------------------------------------------------------------
-*/
 
+// ROUTE UNTUK DASHBOARD, KARYAWAN, KRITERIA, PENILAIAN, HASIL SAW, RIWAYAT PENILAIAN
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 });
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN ONLY
-|--------------------------------------------------------------------------
-*/
 
+// ADMIN ONLY
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
+    // CRUD KARYAWAN, KRITERIA, PENILAIAN
     Route::resource('karyawan', KaryawanController::class);
+
     Route::resource('kriteria', KriteriaController::class);
+
+    // CRUD PENILAIAN, termasuk proses SAW dan hitung ulang
     Route::resource('penilaian', PenilaianController::class);
+
+    // PROSES SAW
+    Route::post('/penilaian/{penilaian}/proses-saw', [HasilSawController::class, 'proses'])
+        ->name('penilaian.proses');
+
+    // HITUNG ULANG SAW
+    Route::post('/penilaian/{penilaian}/hitung-ulang', [HasilSawController::class, 'hitungUlang'])
+        ->name('penilaian.hitung-ulang');
 });
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN & OWNER
-|--------------------------------------------------------------------------
-*/
 
+// ADMIN & OWNER ONLY
 Route::middleware(['auth', 'role:admin,owner'])->group(function () {
 
+    // HASIL RANKING PER PERIODE
     Route::get('/hasil', [HasilSawController::class, 'index'])
         ->name('hasil.index');
 
-    // bagian sini eror sat masuk das dasboar index.blade.php  <a href="{{ route('hasil.index') }}" 
-    // tidak bisa masuk karena butuh {{ $penilai->id }} jadi harusnya route nya gini route('hasil.index', $penilai->id) 
-    //tapi karena di dashboard index.blade.php belum ada variabel $penilai jadi error, jadi untuk sementara saya buat route hasil.index tanpa parameter dulu, nanti kalau mau masukin parameter tinggal hapus aja route hasil.index yang tanpa parameter terus uncomment route hasil.index yang dengan parameter terus masukin variabel $penilai di dashboard index.blade.php
-    // Route::get('/hasil/{penilaian}/detail', [HasilSawController::class, 'detail'])
-    //     ->name('hasil.detail');
-    Route::get('/hasil/detail', [HasilSawController::class, 'detail'])
+    // DETAIL HASIL RANKING PER PERIODE
+    Route::get('/hasil/{penilaian}', [HasilSawController::class, 'detail'])
         ->name('hasil.detail');
+});
 
-    Route::post('/hasil/{penilaian}/proses', [HasilSawController::class, 'proses'])
-        ->name('hasil.proses');
 
+// ADMIN & OWNER ONLY - RIWAYAT PENILAIAN, EXPORT PDF & EXCEL
+Route::middleware(['auth', 'role:admin,owner'])->group(function () {
+
+    // RIWAYAT PENILAIAN PER PERIODE
     Route::get('/riwayat', [RiwayatPenilaianController::class, 'index'])
         ->name('riwayat.index');
 
+    // DETAIL RIWAYAT PENILAIAN PER PERIODE
     Route::get('/riwayat/{penilaian}', [RiwayatPenilaianController::class, 'detail'])
         ->name('riwayat.detail');
+
+    // EXPORT PDF LAPORAN
+    Route::get('/riwayat/{penilaian}/export-pdf', [RiwayatPenilaianController::class, 'exportPdf'])
+        ->name('riwayat.export-pdf');
+
+    // EXPORT EXCEL LAPORAN
+    Route::get('/riwayat/{penilaian}/export-excel', [RiwayatPenilaianController::class, 'exportExcel'])
+        ->name('riwayat.export-excel');
 });

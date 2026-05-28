@@ -16,6 +16,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('periode');
             $table->date('tanggal_penilaian');
+            $table->enum('status_perhitungan', [
+                'pending',
+                'processed'
+            ])->default('pending');
             $table->timestamps();
         });
     }
