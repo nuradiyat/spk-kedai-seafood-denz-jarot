@@ -6,6 +6,7 @@ use App\Models\Penilaian;
 use App\Models\Karyawan;
 use App\Models\Kriteria;
 use App\Models\DetailPenilaian;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PenilaianController extends Controller
@@ -15,9 +16,24 @@ class PenilaianController extends Controller
      */
     public function index()
     {
-        $penilaians = Penilaian::with('user')
+        $penilaians = Penilaian::with([
+            'user',
+            'detailPenilaians'
+        ])
             ->latest()
-            ->get();
+            ->paginate(10);
+
+        $penilaians->through(function ($penilaian) {
+
+            $penilaian->periode_label =
+                Carbon::parse($penilaian->periode)
+                ->translatedFormat('F Y');
+
+            $penilaian->is_processed =
+                $penilaian->status_perhitungan === 'sudah_diproses';
+
+            return $penilaian;
+        });
 
         return view('pages.penilaian.index', compact('penilaians'));
     }
@@ -27,14 +43,17 @@ class PenilaianController extends Controller
      */
     public function create()
     {
+        // Hanya ambil karyawan yang statusnya aktif
         $karyawans = Karyawan::where('status', 'aktif')
             ->get();
 
         $kriterias = Kriteria::all();
 
+        // dd($karyawans->count(), $kriterias->count());
         return view('pages.penilaian.create', compact(
             'karyawans',
             'kriterias'
+            // 'hitungkaryawan',
         ));
     }
 
