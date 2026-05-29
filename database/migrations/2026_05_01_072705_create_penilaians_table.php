@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('tanggal_penilaian');
             $table->enum('status_perhitungan', [
                 'belum_diproses',
+                'pendding',
                 'sudah_diproses'
             ])->default('belum_diproses');
             $table->timestamps();
