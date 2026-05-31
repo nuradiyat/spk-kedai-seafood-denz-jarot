@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('penilaians', function (Blueprint $table) {
             $table->id();
+            // artinya setiap penilaian akan terkait dengan satu user (penilai)
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('periode');
             $table->date('tanggal_penilaian');
             $table->enum('status_perhitungan', [
                 'belum_diproses',
-                'pendding',
+                'hitung_ulang_saw',
                 'sudah_diproses'
             ])->default('belum_diproses');
             $table->timestamps();

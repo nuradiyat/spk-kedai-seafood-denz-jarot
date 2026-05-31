@@ -81,33 +81,7 @@ $nilaiLama : array nilai yang sudah ada (untuk edit)
     </div>
 </div>
 
-{{-- =========================================================
-BAGIAN SKALA NILAI
-========================================================= --}}
-<div class="flex flex-wrap gap-2 mb-5">
-
-    <span class="text-xs font-semibold text-slate-500 self-center mr-1">
-        Skala Nilai:
-    </span>
-
-    @foreach ([
-        1 => ['Sangat Buruk', 'bg-red-100 text-red-700 border-red-200'],
-        2 => ['Buruk', 'bg-orange-100 text-orange-700 border-orange-200'],
-        3 => ['Cukup', 'bg-amber-100 text-amber-700 border-amber-200'],
-        4 => ['Baik', 'bg-teal-bg text-teal-700 border-teal-200'],
-        5 => ['Sangat Baik', 'bg-green-50 text-green-700 border-green-200'],
-    ] as $value => [$label, $class])
-        <span
-            class="inline-flex items-center gap-1.5 {{ $class }} border px-3 py-1 rounded-full text-xs font-semibold">
-            <span class="font-bold">{{ $value }}</span>
-            <span>= {{ $label }}</span>
-        </span>
-    @endforeach
-</div>
-
-{{-- =========================================================
-BAGIAN MATRIX NILAI
-========================================================= --}}
+{{-- BAGIAN MATRIX NILAI --}}
 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
     <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
@@ -179,7 +153,7 @@ BAGIAN MATRIX NILAI
 
                                 <span
                                     class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold
-                                bg-gradient-to-br {{ $karyawan->warna ?? 'from-slate-400 to-slate-600' }}">
+                                    bg-gradient-to-br {{ $karyawan->warna ?? 'from-slate-400 to-slate-600' }}">
 
                                     {{ strtoupper(substr($karyawan->nama_karyawan, 0, 2)) }}
 

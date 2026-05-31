@@ -51,8 +51,15 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('penilaian.hitung-ulang');
 });
 
+// owner only
+Route::middleware(['auth', 'role:owner'])->group(function () {
 
-// ADMIN & OWNER ONLY
+    // bonus 
+    Route::resource('bonus', BonusController::class);
+});
+
+
+// ADMIN & OWNER ONLY - HASIL RANKING PER PERIODE, DETAIL HASIL RANKING PER PERIODE
 Route::middleware(['auth', 'role:admin,owner'])->group(function () {
 
     // HASIL RANKING PER PERIODE

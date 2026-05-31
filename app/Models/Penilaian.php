@@ -11,8 +11,9 @@ class Penilaian extends Model
     protected $fillable = [
         'user_id',
         'periode',
-        'status_perhitungan',
         'tanggal_penilaian',
+        // 'total_bonus',
+        'status_perhitungan',
     ];
 
     /**
@@ -37,5 +38,17 @@ class Penilaian extends Model
     public function hasilSaws(): HasMany
     {
         return $this->hasMany(HasilSaw::class);
+    }
+
+    // relasi bonus
+    public function bonus()
+    {
+        return $this->hasOne(Bonus::class);
+    }
+
+    // relasi riwayat penilaian
+    public function riwayat()
+    {
+        return $this->hasOne(RiwayatPenilaian::class);
     }
 }

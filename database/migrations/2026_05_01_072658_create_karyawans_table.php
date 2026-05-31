@@ -16,7 +16,10 @@ return new class extends Migration
             $table->string('nama_karyawan');
             $table->string('jabatan')->nullable();
             $table->date('tanggal_masuk')->nullable();
-            $table->string('status')->default('aktif');
+            $table->enum('status', [
+                'aktif',
+                'tidak_aktif'
+            ])->default('aktif');
             $table->timestamps();
         });
     }

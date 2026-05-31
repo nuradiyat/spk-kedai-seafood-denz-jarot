@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SAWService;
 use App\Models\Penilaian;
 use App\Models\Karyawan;
 use App\Models\Kriteria;
@@ -19,7 +20,8 @@ class PenilaianController extends Controller
     {
         $penilaians = Penilaian::with([
             'user',
-            'detailPenilaians'
+            'detailPenilaians',
+            'bonus'
         ])
             ->latest()
             ->paginate(10);
@@ -33,10 +35,19 @@ class PenilaianController extends Controller
             $penilaian->is_processed =
                 $penilaian->status_perhitungan === 'sudah_diproses';
 
+            $penilaian->jumlah_karyawan =
+                $penilaian->detailPenilaians
+                ->pluck('karyawan_id')
+                ->unique()
+                ->count();
+
             return $penilaian;
         });
 
-        return view('pages.penilaian.index', compact('penilaians'));
+        return view(
+            'pages.penilaian.index',
+            compact('penilaians')
+        );
     }
 
     /**
@@ -54,12 +65,11 @@ class PenilaianController extends Controller
         return view('pages.penilaian.create', compact(
             'karyawans',
             'kriterias'
-            // 'hitungkaryawan',
         ));
     }
 
     /**
-     * 📌 Simpan penilaian + detail nilai
+     * 📌 Simpan penilaian 
      */
     public function store(Request $request)
     {
@@ -70,11 +80,6 @@ class PenilaianController extends Controller
          */
         $request->validate([
             'periode' => 'required|string|max:255',
-            // ini di isi otomatis saat proses penilaian, jadi defaultnya "belum_diproses"
-            // nanti saat proses penilaian selesai, status_perhitungan di update menjadi "sudah_diproses"
-            // proces ini ada di route proses penilaian atau bagian show.blade.php jadi proses perhitungan dishni
-            // saat klick tombol proses penilaian, maka status_perhitungan di update menjadi "sudah_diproses"
-            // 'status_perhitungan' => 'required|string|max:255',
             'nilai'   => 'required|array',
             'nilai.*.*' => 'required|numeric|min:0',
         ]);
@@ -87,11 +92,6 @@ class PenilaianController extends Controller
         $penilaian = Penilaian::create([
             // TODO: Ganti dengan user yang sedang login
             'user_id'            => Auth::id(),
-            // ini di isi otomatis saat proses penilaian, jadi defaultnya "belum_diproses"
-            // nanti saat proses penilaian selesai, status_perhitungan di update menjadi "sudah_diproses"
-            // proces ini ada di route proses penilaian atau bagian show.blade.php jadi proses perhitungan dishni
-            // saat klick tombol proses penilaian, maka status_perhitungan di update menjadi "sudah_diproses"
-            // 'status_perhitungan' => $request->status_perhitungan,
             'periode'            => $request->periode,
             'tanggal_penilaian'  => now(),
         ]);
@@ -120,18 +120,158 @@ class PenilaianController extends Controller
     }
 
     /**
-     * 📌 Detail penilaian
+     * 📌 Detail penilaian 
+     * menampilkan detail penilaian dan mejalankan hasil perhitungan
+     * sesuai dengan status_perhitungan jika belum di proses tampilkan tombol jalakan perhitungan
+     * jika status_perhitungan pendding atau sudah di proses jalakan ulang perhitungan
      */
     public function show($id)
     {
         $penilaian = Penilaian::with([
             'user',
+            'detailPenilaians'
+        ])->findOrFail($id);
+
+
+        return view('pages.penilaian.show', compact('penilaian'));
+    }
+
+    /**
+     * 📌 jalankan perhitungan saw
+     * ini akan menghitung nilai akhir (V) untuk setiap karyawan berdasarkan metode SAW.
+     * Setelah proses ini, status_perhitungan di update menjadi "sudah_dipros.
+     * ini di jalakan hanya saat status saw "belum di Proses" maka tombol yang yang akan
+     * di tampilkan hanya jalakan perhitungan saw
+     */
+    public function prosesPenilaian($id, SAWService $sawService)
+    {
+        $penilaian = Penilaian::findOrFail($id);
+
+        $sawService->hitung($penilaian);
+
+        $penilaian->update([
+            'status_perhitungan' => 'sudah_diproses'
+        ]);
+
+        return redirect()
+            ->route('hasil.proses', $penilaian->id)
+            ->with(
+                'success',
+                'Perhitungan SAW berhasil dijalankan'
+            );
+    }
+
+
+    /**
+     * 📌 jalankan ulang perhitungan saw (update) 
+     * karena ada data yang di edit, maka proses perhitungan saw hitung_ulang_saw harus dijalankan ulang untuk memperbarui 
+     * nilai akhir (V) untuk setiap karyawan. setela di jalakan sekali lagi, maka status_perhitungan di update menjadi "sudah_diproses" lagi, 
+     * karena proses perhitungan sudah selesai dijalankan ulang, saat status proses "sudah_diproses" 
+     * tombol perhitungan tetap jalakan ulang perhitungan saw, jalakan perhitungan saw ada ketika
+     * status saw "belum di proses
+     */
+    public function prosesUlangPenilaian($id, SAWService $sawService)
+    {
+        $penilaian = Penilaian::findOrFail($id);
+
+        $sawService->hitung($penilaian);
+
+        $penilaian->update([
+            'status_perhitungan' => 'sudah_diproses'
+        ]);
+
+        return redirect()
+            ->route('hasil.proses', $penilaian->id)
+            ->with(
+                'success',
+                'Perhitungan SAW berhasil diperbarui'
+            );
+    }
+
+    /**
+     * 📌 Form edit penilaian
+     * akan mengubah data penilaian karyawan, karena ada data yang di rubah
+     * makan status_saw akan di update manjadi "pendding", maka harus
+     * di jalakan ulang perhitungan di show setelah prosesUlangPenilaian akan di jalakan
+     * makan status akan status_saw akan ter update kembali menjadi "sudah_diproses"
+     */
+    public function edit($id)
+    {
+
+        // Ambil data Penilaian berdasarkan ID yang dikirim.
+        // Dari Penilaian tersebut, ambil semua DetailPenilaian
+        // melalui method detailPenilaians() yang ada di model Penilaian.
+        //
+        // Dari setiap DetailPenilaian, ambil data Karyawan
+        // melalui method karyawan() yang ada di model DetailPenilaian.
+        //
+        // Dari setiap DetailPenilaian, ambil data Kriteria
+        // melalui method kriteria() yang ada di model DetailPenilaian.
+        $penilaian = Penilaian::with([
             'detailPenilaians.karyawan',
             'detailPenilaians.kriteria'
         ])->findOrFail($id);
 
-        return view('pages.penilaian.detail', compact('penilaian'));
+        // Ambil semua ID karyawan yang sudah dinilai pada periode ini,
+        // lalu hapus ID yang duplikat agar setiap karyawan hanya muncul sekali.
+        $karyawanIds = $penilaian->detailPenilaians
+            ->pluck('karyawan_id')
+            ->unique();
+
+        $karyawans = Karyawan::whereIn('id', $karyawanIds)
+            ->get();
+
+        $kriterias = Kriteria::all();
+
+        $nilaiLama = $penilaian->detailPenilaians
+            ->groupBy('karyawan_id')
+            ->map(function ($details) {
+                return $details
+                    ->pluck('nilai', 'kriteria_id')
+                    ->toArray();
+            })
+            ->toArray();
+
+        return view('pages.penilaian.edit', compact(
+            'penilaian',
+            'karyawans',
+            'kriterias',
+            'nilaiLama'
+        ));
     }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nilai'      => 'required|array',
+            'nilai.*.*'  => 'required|integer|min:1|max:5',
+        ]);
+
+        $penilaian = Penilaian::findOrFail($id);
+
+        foreach ($request->nilai as $karyawanId => $nilaiKriteria) {
+
+            foreach ($nilaiKriteria as $kriteriaId => $nilai) {
+
+                DetailPenilaian::where([
+                    'penilaian_id' => $penilaian->id,
+                    'karyawan_id' => $karyawanId,
+                    'kriteria_id' => $kriteriaId,
+                ])->update([
+                    'nilai' => $nilai
+                ]);
+            }
+        }
+
+        $penilaian->update([
+            'status_perhitungan' => 'hitung_ulang_saw'
+        ]);
+
+        return redirect()
+            ->route('penilaian.show', $penilaian->id)
+            ->with('success', 'Data berhasil diperbarui');
+    }
+
 
     /**
      * 📌 Hapus penilaian

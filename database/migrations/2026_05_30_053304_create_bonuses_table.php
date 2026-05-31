@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('riwayat_penilaians', function (Blueprint $table) {
+        Schema::create('bonuses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('penilaian_id')->constrained()->cascadeOnDelete();
-            $table->string('penanggung_jawab');
-            $table->date('jabatan');
-            $table->string('tdd')->nullable();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->decimal('total_bonus', 15, 2);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('riwayat_penilaians');
+        Schema::dropIfExists('bonuses');
     }
 };
