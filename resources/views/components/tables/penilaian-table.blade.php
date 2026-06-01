@@ -130,35 +130,29 @@
 
                     {{-- STATUS --}}
                     <td class="px-4 py-4">
+                        @php
+                            $status = $penilaian->status_perhitungan;
+                        @endphp
 
-                        @if ($penilaian->status_perhitungan === 'sudah_diproses')
+                        @if ($status === 'sudah_diproses')
                             <span
-                                class="inline-flex items-center gap-1.5
-                                       bg-teal-50 text-teal-700
-                                       border border-teal-200
-                                       px-3 py-1 rounded-full
-                                       text-xs font-semibold">
-
+                                class="inline-flex items-center gap-1.5 bg-teal-50 text-teal-700 border border-teal-200 px-3 py-1 rounded-full text-xs font-semibold">
                                 <i class="fas fa-check-circle text-[10px]"></i>
-
                                 Sudah Diproses
-
+                            </span>
+                        @elseif ($status === 'hitung_ulang_saw')
+                            <span
+                                class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-semibold">
+                                <i class="fas fa-sync-alt text-[10px]"></i>
+                                Hitung Ulang Saw
                             </span>
                         @else
                             <span
-                                class="inline-flex items-center gap-1.5
-                                       bg-amber-50 text-amber-700
-                                       border border-amber-200
-                                       px-3 py-1 rounded-full
-                                       text-xs font-semibold">
-
+                                class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full text-xs font-semibold">
                                 <i class="fas fa-clock text-[10px]"></i>
-
-                                Belum Diproses
-
+                                Belum Diproses Sayang
                             </span>
                         @endif
-
                     </td>
 
                     {{-- USER --}}

@@ -45,8 +45,7 @@ class PenilaianController extends Controller
         });
 
         return view(
-            'pages.penilaian.index',
-            compact('penilaians')
+            'pages.penilaian.index', compact('penilaians')
         );
     }
 
@@ -267,6 +266,7 @@ class PenilaianController extends Controller
             'status_perhitungan' => 'hitung_ulang_saw'
         ]);
 
+        // redirect penilaian show untuk jalakan proses saw
         return redirect()
             ->route('penilaian.show', $penilaian->id)
             ->with('success', 'Data berhasil diperbarui');
