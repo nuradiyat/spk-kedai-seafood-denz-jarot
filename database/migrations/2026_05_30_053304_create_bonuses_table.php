@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('bonuses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('penilaian_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->decimal('total_bonus', 15, 2);
+            $table->decimal('total_bonus', 15, 2)->nullable();
+            $table->enum('status_bonus', [
+                'belum_di_berikan',
+                'sudah_di_berikan',
+            ])->default('belum_di_berikan');
             $table->timestamps();
         });
     }

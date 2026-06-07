@@ -39,6 +39,13 @@
                 </th>
 
                 <th
+                    class="px-4 py-3.5 text-left
+                           text-[11px] font-semibold
+                           text-slate-400 uppercase">
+                    Total Bonus
+                </th>
+
+                <th
                     class="hidden md:table-cell
                            px-4 py-3.5 text-left
                            text-[11px] font-semibold
@@ -153,6 +160,18 @@
                                 Belum Diproses Sayang
                             </span>
                         @endif
+                    </td>
+
+                    {{-- TOTAL BONUS --}}
+                    <td class="px-4 py-4">
+                        {{-- Cek status bonus --}}
+                        @php
+                            $status_bonus = $penilaian->status_bonus;
+                        @endphp
+
+                        <p class="font-bold text-ocean">
+                            {{ $penilaian->total_bonus ? 'Rp ' . number_format($penilaian->total_bonus, 0, ',', '.') : '-' }}
+                        </p>
                     </td>
 
                     {{-- USER --}}

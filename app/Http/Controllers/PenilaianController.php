@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bonus;
 use App\Services\SAWService;
 use App\Models\Penilaian;
 use App\Models\Karyawan;
@@ -113,6 +114,16 @@ class PenilaianController extends Controller
             }
         }
 
+        // simpan bonus dengan penilaian id yang sama, karena bonus akan di hitung setelah proses perhitungan saw dijalankan,
+        //  maka bonus akan di buat terlebih dahulu dengan penilaian id yang sama, nanti setelah proses perhitungan saw dijalankan,
+        //  maka bonus akan di update dengan total bonus yang sudah di hitung berdasarkan hasil perhitungan saw
+        Bonus::create([
+            // $penilaian->id di dapat dari penilaian yang sudah di buat, karena bonus akan di buat dengan penilaian id yang sama, maka kita ambil penilaian id dari penilaian yang sudah di buat
+            // iya di ambil itu dari mana penilaian yang sudah di buat itu dari Penilaian::create() yang sudah di buat di atas, karena Penilaian::create() akan mengembalikan data penilaian yang sudah di buat, maka kita bisa ambil id penilaian dari data penilaian yang sudah di buat tersebut, jadi kita bisa ambil id penilaian dari $penilaian->id karena $penilaian itu adalah data penilaian yang sudah di buat, jadi kita bisa ambil id penilaian dari $penilaian->id untuk di simpan ke bonus dengan penilaian id yang sama
+            // Penilaian::create() setelah itu kita panggil varibel $penilaian untuk menyimpan data penilaian yang sudah di buat, maka kita bisa ambil id penilaian dari $penilaian->id untuk di simpan ke bonus dengan penilaian id yang sama
+            'penilaian_id' => $penilaian->id,
+        ]);
+
         return redirect()
             ->route('penilaian.index')
             ->with('success', 'Penilaian berhasil disimpan');
@@ -215,6 +226,7 @@ class PenilaianController extends Controller
         // lalu hapus ID yang duplikat agar setiap karyawan hanya muncul sekali.
         $karyawanIds = $penilaian->detailPenilaians
             ->pluck('karyawan_id')
+            // unique() digunakan untuk menghapus duplikat ID karyawan, karena satu karyawan bisa memiliki banyak DetailPenilaian jika dinilai berdasarkan beberapa kriteria. Dengan unique(), kita memastikan bahwa setiap ID karyawan hanya muncul sekali dalam daftar.
             ->unique();
 
         $karyawans = Karyawan::whereIn('id', $karyawanIds)

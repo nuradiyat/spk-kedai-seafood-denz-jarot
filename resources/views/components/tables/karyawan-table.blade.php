@@ -49,6 +49,8 @@ Komponen tabel daftar karyawan reusable.
             @empty
                 ini tidak ada data 
             @endforelse --}}
+            
+            {{-- lopping isi data namu jika tida ada data tampilkan @empty --}}
             @forelse($karyawans as $i => $k)
                 <tr class="border-b border-slate-50 last:border-0 tbl-row">
 

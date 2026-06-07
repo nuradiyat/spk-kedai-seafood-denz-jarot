@@ -64,6 +64,13 @@ FUNGSI  : Sidebar khusus owner
             Penilaian
         </p>
 
+        <a href="{{ route('bonus.index') }}"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-white/55 hover:bg-white/[.07] hover:text-white transition-all">
+
+            <i class="fas fa-gift w-4 text-center shrink-0"></i>
+            Bonus Karyawan
+        </a>
+
         <a href="{{ route('hasil.index') }}"
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] text-white/55 hover:bg-white/[.07] hover:text-white transition-all">
 
