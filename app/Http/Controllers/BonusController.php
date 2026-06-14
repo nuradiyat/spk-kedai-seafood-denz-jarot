@@ -33,15 +33,19 @@ class BonusController extends Controller
             // cek status perhitungan saw 'sudah_di_hitung', 'belum_di_hitung' atau 'hitung ulang saw'
             $bonus->status_perhitungan = $bonus->penilaian->status_perhitungan;
 
-            $bonus->jumlah_karyawan = $bonus->penilaian
-                ->detailPenilaians
-                ->pluck('karyawan_id')
-                ->unique()
-                ->count();
+            // bisa pake di views blade pemanggilaan $bonus->jumlah_karyawan untuk menampilkan jumlah karyawan yang dinilai di periode tersebut, karena kita sudah mengambil data detail penilaian dengan with(['penilaian.detailPenilaians']) jadi kita bisa menghitung jumlah karyawan yang dinilai dengan mengambil data detail penilaian lalu pluck('karyawan_id') untuk mengambil id karyawan yang dinilai lalu unique() untuk menghilangkan duplikat id karyawan yang dinilai lalu count() untuk menghitung jumlah karyawan yang dinilai
+            // $bonus->jumlah_karyawan = $bonus->penilaian
+            //     ->detailPenilaians
+            //     ->pluck('karyawan_id')
+            //     ->unique()
+            //     ->count();
 
-            $bonus->tanggal_penilaian = \Carbon\Carbon::parse(
+            $bonus->tanggal_dipenilaian = \Carbon\Carbon::parse(
                 $bonus->penilaian->tanggal_penilaian
             )->translatedFormat('d F Y');
+
+            // diffForHumans untuk menampilkan waktu yang sudah berlalu sejak tanggal penilaian dibuat, misalnya "2 hari yang lalu", "3 jam yang lalu", dll
+            $bonus->waktu_penilaian = $bonus->penilaian->created_at->diffForHumans();
 
 
             $bonus->waktu_penilaian = $bonus->penilaian->created_at->diffForHumans();
@@ -49,9 +53,30 @@ class BonusController extends Controller
             return $bonus;
         });
 
+        // modikasi di luar trough karena kita hanya butuh total karyawan per periode, tidak perlu menghitung jumlah 
+        // karyawan untuk setiap bonus, cukup hitung sekali untuk setiap periode penilaian yang ditampilkan di halaman index bonus
+        $total_karyawan_per_periode = $bonuses->pluck('penilaian.detailPenilaians')
+            ->flatten()
+            ->pluck('karyawan_id')
+            ->unique()
+            ->count();
+
+        $totalBonus = $bonuses->total();
+
+        $bonusSudahDiisi = $bonuses
+            ->getCollection()
+            ->whereNotNull('total_bonus')
+            ->count();
+
+        $bonusBelumDiisi = $bonuses
+            ->getCollection()
+            ->whereNull('total_bonus')
+            ->count();
+
+
 
         // status bonus untuk ditampilkan di view
-        return view('pages.bonus.index', compact('bonuses'));
+        return view('pages.bonus.index', compact('bonuses', 'total_karyawan_per_periode', 'bonusSudahDiisi', 'bonusBelumDiisi', 'totalBonus'));
     }
 
     /**

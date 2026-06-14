@@ -32,28 +32,93 @@ Route: GET /bonus → bonus.index
 
     </div>
 
-        <button type="submit"
-            class="px-4 py-2.5
-                   bg-white border border-slate-200
-                   rounded-xl text-sm text-slate-600
-                   hover:bg-slate-50 transition-colors">
+    {{-- ================================================================
+     RINGKASAN DATA BONUS
+================================================================ --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
 
-            <i class="fas fa-search"></i>
+        {{-- Total Data Bonus --}}
+        <div
+            class="bg-white rounded-xl border border-slate-200 p-4 relative overflow-hidden
+               hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
 
-        </button>
+            <div class="absolute top-0 right-0 w-12 h-12 rounded-bl-[40px] bg-ocean opacity-10"></div>
 
-        @if (request('search'))
-            <a href="{{ route('bonus.index') }}"
-                class="px-4 py-2.5
-                  bg-white border border-slate-200
-                  rounded-xl text-sm text-slate-400
-                  hover:bg-slate-50 transition-colors"
-                title="Hapus pencarian">
+            <div class="flex items-center justify-between mb-3">
 
-                <i class="fas fa-times"></i>
+                <div
+                    class="w-9 h-9 rounded-lg bg-ocean/10 text-ocean
+                       flex items-center justify-center">
+                    <i class="fas fa-money-bill-wave text-sm"></i>
+                </div>
 
-            </a>
-        @endif
+            </div>
+
+            <div class="font-heading font-bold text-ocean text-2xl">
+                {{ $totalBonus ?? 0 }}
+            </div>
+
+            <p class="text-xs text-slate-400 mt-1">
+                Total periode bonus yang tersedia.
+            </p>
+
+        </div>
+
+        {{-- Bonus Sudah Diisi --}}
+        <div
+            class="bg-white rounded-xl border border-slate-200 p-4 relative overflow-hidden
+               hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+
+            <div class="absolute top-0 right-0 w-12 h-12 rounded-bl-[40px] bg-teal opacity-10"></div>
+
+            <div class="flex items-center justify-between mb-3">
+
+                <div
+                    class="w-9 h-9 rounded-lg bg-teal/10 text-teal-700
+                       flex items-center justify-center">
+                    <i class="fas fa-check-circle text-sm"></i>
+                </div>
+
+            </div>
+
+            <div class="font-heading font-bold text-green-600 text-2xl">
+                {{ $bonusSudahDiisi ?? 0 }}
+            </div>
+
+            <p class="text-xs text-slate-400 mt-1">
+                Total Bonus telah di berikan.
+            </p>
+
+        </div>
+
+        {{-- Bonus Belum Diisi --}}
+        <div
+            class="bg-white rounded-xl border border-slate-200 p-4 relative overflow-hidden
+               hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+
+            <div class="absolute top-0 right-0 w-12 h-12 rounded-bl-[40px] bg-coral opacity-10"></div>
+
+            <div class="flex items-center justify-between mb-3">
+
+                <div
+                    class="w-9 h-9 rounded-lg bg-coral/10 text-coral
+                       flex items-center justify-center">
+                    <i class="fas fa-clock text-sm"></i>
+                </div>
+
+            </div>
+
+            <div class="font-heading font-bold text-coral text-2xl">
+                {{ $bonusBelumDiisi ?? 0 }}
+            </div>
+
+            <p class="text-xs text-slate-400 mt-1">
+                Menunggu pengisian total bonus.
+            </p>
+
+        </div>
+
+    </div>
 
     </form>
 

@@ -97,7 +97,7 @@ Komponen tabel daftar bonus reusable.
                                    bg-ocean/10 text-ocean
                                    font-bold text-sm">
 
-                            {{ $bonus->jumlah_karyawan ?? '-' }}
+                            {{ $total_karyawan_per_periode ?? '-' }}
                         </span>
 
                     </td>
@@ -153,7 +153,7 @@ Komponen tabel daftar bonus reusable.
 
                     {{-- Total bonus --}}
                     <td class="px-3 py-3.5 font-medium text-teal">
-                        {{ $bonus->total_bonus ? 'Rp ' . number_format($bonus->total_bonus, 0, ',', '.') : 'Rp 0' }}       
+                        {{ $bonus->total_bonus ? 'Rp ' . number_format($bonus->total_bonus, 0, ',', '.') : 'Rp 0' }}
                     </td>
 
                     {{-- Tanggal penilaian, relasi penilaian --}}
@@ -161,13 +161,24 @@ Komponen tabel daftar bonus reusable.
 
                         <p class="text-slate-500 text-xs">
 
-                            {{ $bonus->penilaian->tanggal_penilaian ?? '-' }}
+                            {{-- Tanggal penilaian di ambil dari $bonuses->through controller --}}
+                            {{ $bonus->tanggal_dipenilaian }}
+
+                            {{-- ini langsung ambil di model bonus dengan $bonus->penilaian->tanggal_penilaian 
+                            karena kita sudah mengambil data penilaian dengan with('penilaian') jadi kita bisa langsung mengambil data penilaian yang terkait dengan bonus lalu ambil tanggal penilaian dengan ->tanggal_penilaian, kalau tidak ada data penilaian maka tampilkan '-' --}}
+                            {{-- {{ $bonus->penilaian->tanggal_penilaian ?? '-' }} --}}
 
                         </p>
 
                         <p class="text-slate-400 text-[10px] mt-1">
 
-                            {{ $bonus->penilaian->created_at ?? '-' }}
+
+                            {{-- waktu penilaian di ambil dari $bonuses->through controller --}}
+                            {{ $bonus->waktu_penilaian ?? '-' }} {{-- ini sudah di set di controller dengan diffForHumans jadi tampilannya seperti "2 hari yang lalu", "3 jam yang lalu", dll --}}
+
+                            {{-- ini langsung ambil di model bonus dengan $bonus->penilaian->created_at 
+                            karena kita sudah mengambil data penilaian dengan with('penilaian') jadi kita bisa langsung mengambil data penilaian yang terkait dengan bonus lalu ambil tanggal pembuatan penilaian dengan ->created_at, kalau tidak ada data penilaian maka tampilkan '-' --}}
+                            {{-- {{ $bonus->penilaian->created_at ?? '-' }} --}}
 
                         </p>
 
@@ -186,21 +197,26 @@ Komponen tabel daftar bonus reusable.
                                 <i class="fas fa-eye text-xs"></i>
                             </a>
 
-                            <a href="{{ route('karyawan.edit', $bonus->id) }}"
-                                class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100
-                                      flex items-center justify-center transition-colors"
-                                title="Edit">
-                                <i class="fas fa-pen text-xs"></i>
-                            </a>
-
-                            <button
-                                onclick="openDeleteModal('{{ route('karyawan.destroy', $bonus->id) }}', '{{ addslashes($bonus->nama_karyawan) }}')"
-                                class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100
-                                       flex items-center justify-center transition-colors"
-                                title="Hapus">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
-
+                            {{-- jika total_bonus null maka tampilkan tombol Tambah Bonus
+                            namun jika sudah ada total_bonus maka tampilkan tombol Edit Bonus data total bonus di dapat dari 
+                            $bonus->total_bonus yang di kirirm dari controller metod edit --}}
+                            @if (is_null($bonus->total_bonus))
+                                {{-- Tambah Bonus --}}
+                                <a href="{{ route('bonus.edit', $bonus->id) }}"
+                                    class="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-100
+                                            flex items-center justify-center transition-colors"
+                                    title="Tambah Bonus">
+                                    <i class="fas fa-money-bill-wave text-xs"></i>
+                                </a>
+                            @else
+                                {{-- Edit Bonus --}}
+                                <a href="{{ route('bonus.edit', $bonus->id) }}"
+                                    class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100
+                                            flex items-center justify-center transition-colors"
+                                    title="Edit Bonus">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </a>
+                            @endif
                         </div>
                     </td>
 
