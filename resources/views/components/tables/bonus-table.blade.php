@@ -200,23 +200,15 @@ Komponen tabel daftar bonus reusable.
                             {{-- jika total_bonus null maka tampilkan tombol Tambah Bonus
                             namun jika sudah ada total_bonus maka tampilkan tombol Edit Bonus data total bonus di dapat dari 
                             $bonus->total_bonus yang di kirirm dari controller metod edit --}}
-                            @if (is_null($bonus->total_bonus))
+                            {{-- @if (is_null($bonus->total_bonus)) --}}
                                 {{-- Tambah Bonus --}}
-                                <a href="{{ route('bonus.create', $bonus->id) }}"
+                                <a href="{{ route('bonus.tambah', $bonus->id) }}"
                                     class="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-100
                                             flex items-center justify-center transition-colors"
                                     title="Tambah Bonus">
                                     <i class="fas fa-money-bill-wave text-xs"></i>
                                 </a>
-                            @else
-                             
-                                <a href="{{ route('bonus.edit', $bonus->id) }}"
-                                    class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100
-                                            flex items-center justify-center transition-colors"
-                                    title="Edit Bonus">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </a>
-                            @endif
+                
                         </div>
                     </td>
 

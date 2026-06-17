@@ -54,8 +54,6 @@ class BonusController extends Controller
             return $bonus;
         });
 
-       
-
         $totalBonus = $bonuses->total();
 
         $bonusSudahDiisi = $bonuses
@@ -79,21 +77,24 @@ class BonusController extends Controller
      */
     public function create(Bonus $bonus)
     {
-        $bonus = Bonus::with([
-            'penilaian.detailPenilaians'
-        ])->findOrFail($bonus->id);
+        // ambil relasi yang dibutuhkan
+        $bonus->load('penilaian.detailPenilaians');
 
+        // format periode
         $bonus->periode_label = Carbon::parse(
             $bonus->penilaian->periode
         )->translatedFormat('F Y');
 
+        // format tanggal penilaian
         $bonus->tanggal_penilaian_label = Carbon::parse(
             $bonus->penilaian->tanggal_penilaian
         )->translatedFormat('d F Y');
 
+        // status perhitungan SAW
         $bonus->status_perhitungan =
             $bonus->penilaian->status_perhitungan;
 
+        // jumlah karyawan yang dinilai
         $bonus->jumlah_karyawan =
             $bonus->penilaian
             ->detailPenilaians
@@ -101,13 +102,13 @@ class BonusController extends Controller
             ->unique()
             ->count();
 
+        // status bonus untuk ditampilkan di view
         $bonus->status_bonus =
             is_null($bonus->total_bonus)
             ? 'Belum Diberikan'
             : 'Sudah Diberikan';
 
-        return view(
-            'pages.bonus.create',
+        return view('pages.bonus.create',
             compact('bonus')
         );
     }
@@ -115,19 +116,44 @@ class BonusController extends Controller
     /**
      * update artibut total_bonus menjadi 'total bonus yang di berikan oleh owner' update total_bonus 'sudah_di_berikan' 
      */
-    public function store(Request $request, Bonus $bonus)
+    public function store(Request $request)
     {
-        // validasi
+        // validasi input
         $validated = $request->validate([
+            'bonus_id'    => 'required|exists:bonuses,id',
             'total_bonus' => 'required|numeric|min:0',
         ]);
 
-        // update data 
+        // ambil data bonus beserta relasi penilaian
+        $bonus = Bonus::with('penilaian')
+            ->findOrFail($validated['bonus_id']);
+
+        // cek apakah bonus sebelumnya sudah pernah diisi
+        $sudahPernahDiisi = !is_null($bonus->total_bonus);
+
+        // update total bonus dan status bonus
         $bonus->update([
-            'total_bonus' => $validated['total_bonus'],
-            'status_bonus' => 'sudah_di_berikan'
+            'total_bonus'  => $validated['total_bonus'],
+            'status_bonus' => 'sudah_di_berikan',
         ]);
 
+        // jika bonus sudah pernah diisi sebelumnya
+        // berarti owner sedang mengubah nominal bonus
+        if ($sudahPernahDiisi) {
+
+            $bonus->penilaian->update([
+                'status_perhitungan' => 'hitung_ulang_saw',
+            ]);
+
+            return redirect()
+                ->route('bonus.index')
+                ->with(
+                    'success',
+                    'Total bonus berhasil diperbarui. Status perhitungan SAW diubah menjadi Hitung Ulang SAW.'
+                );
+        }
+
+        // pertama kali mengisi bonus
         return redirect()
             ->route('bonus.index')
             ->with(
@@ -135,7 +161,6 @@ class BonusController extends Controller
                 'Total bonus berhasil ditambahkan.'
             );
     }
-
     /**
      * menampilkan detail id bonus 
      */
