@@ -132,7 +132,9 @@ PAKAI   : @extends('layouts.app') di semua halaman pages/
 
             {{-- PAGE CONTENT --}}
             <main class="flex-1 p-4 lg:p-7">
+                {{-- Tampilkan pesan sukses --}}
                 @include('components.alerts.success')
+                {{-- Tampilkan pesan eror --}}
                 @include('components.alerts.error')
                 @yield('content')
             </main>

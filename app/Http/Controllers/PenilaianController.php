@@ -36,8 +36,7 @@ class PenilaianController extends Controller
             $penilaian->is_processed =
                 $penilaian->status_perhitungan === 'sudah_diproses';
 
-            $penilaian->jumlah_karyawan =
-                $penilaian->detailPenilaians
+            $penilaian->jumlah_karyawan = $penilaian->detailPenilaians
                 ->pluck('karyawan_id')
                 ->unique()
                 ->count();

@@ -55,6 +55,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // owner only
 Route::middleware(['auth', 'role:owner'])->group(function () {
 
+    // Route::get(
+    //     '/bonus/{bonus}/create',
+    //     [BonusController::class, 'create']
+    // )->name('bonus.create');
     // bonus 
     Route::resource('bonus', BonusController::class);
 });

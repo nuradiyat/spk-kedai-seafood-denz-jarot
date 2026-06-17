@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bonus;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class BonusController extends Controller
@@ -34,11 +35,11 @@ class BonusController extends Controller
             $bonus->status_perhitungan = $bonus->penilaian->status_perhitungan;
 
             // bisa pake di views blade pemanggilaan $bonus->jumlah_karyawan untuk menampilkan jumlah karyawan yang dinilai di periode tersebut, karena kita sudah mengambil data detail penilaian dengan with(['penilaian.detailPenilaians']) jadi kita bisa menghitung jumlah karyawan yang dinilai dengan mengambil data detail penilaian lalu pluck('karyawan_id') untuk mengambil id karyawan yang dinilai lalu unique() untuk menghilangkan duplikat id karyawan yang dinilai lalu count() untuk menghitung jumlah karyawan yang dinilai
-            // $bonus->jumlah_karyawan = $bonus->penilaian
-            //     ->detailPenilaians
-            //     ->pluck('karyawan_id')
-            //     ->unique()
-            //     ->count();
+            $bonus->jumlah_karyawan = $bonus->penilaian
+                ->detailPenilaians
+                ->pluck('karyawan_id')
+                ->unique()
+                ->count();
 
             $bonus->tanggal_dipenilaian = \Carbon\Carbon::parse(
                 $bonus->penilaian->tanggal_penilaian
@@ -53,13 +54,7 @@ class BonusController extends Controller
             return $bonus;
         });
 
-        // modikasi di luar trough karena kita hanya butuh total karyawan per periode, tidak perlu menghitung jumlah 
-        // karyawan untuk setiap bonus, cukup hitung sekali untuk setiap periode penilaian yang ditampilkan di halaman index bonus
-        $total_karyawan_per_periode = $bonuses->pluck('penilaian.detailPenilaians')
-            ->flatten()
-            ->pluck('karyawan_id')
-            ->unique()
-            ->count();
+       
 
         $totalBonus = $bonuses->total();
 
@@ -76,47 +71,73 @@ class BonusController extends Controller
 
 
         // status bonus untuk ditampilkan di view
-        return view('pages.bonus.index', compact('bonuses', 'total_karyawan_per_periode', 'bonusSudahDiisi', 'bonusBelumDiisi', 'totalBonus'));
+        return view('pages.bonus.index', compact('bonuses', 'bonusSudahDiisi', 'bonusBelumDiisi', 'totalBonus'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * menampilkan form create untuk meng update data bonus
      */
-    public function create(Request $request)
+    public function create(Bonus $bonus)
     {
-        $bonus = Bonus::with('penilaian')
-            ->where('penilaian_id', $request->penilaian_id)
-            ->first();
+        $bonus = Bonus::with([
+            'penilaian.detailPenilaians'
+        ])->findOrFail($bonus->id);
 
-        return view('pages.bonus.create', compact('bonus'));
+        $bonus->periode_label = Carbon::parse(
+            $bonus->penilaian->periode
+        )->translatedFormat('F Y');
+
+        $bonus->tanggal_penilaian_label = Carbon::parse(
+            $bonus->penilaian->tanggal_penilaian
+        )->translatedFormat('d F Y');
+
+        $bonus->status_perhitungan =
+            $bonus->penilaian->status_perhitungan;
+
+        $bonus->jumlah_karyawan =
+            $bonus->penilaian
+            ->detailPenilaians
+            ->pluck('karyawan_id')
+            ->unique()
+            ->count();
+
+        $bonus->status_bonus =
+            is_null($bonus->total_bonus)
+            ? 'Belum Diberikan'
+            : 'Sudah Diberikan';
+
+        return view(
+            'pages.bonus.create',
+            compact('bonus')
+        );
     }
 
     /**
-     * Store a newly created resource in storage.
+     * update artibut total_bonus menjadi 'total bonus yang di berikan oleh owner' update total_bonus 'sudah_di_berikan' 
      */
-    public function store(Request $request)
+    public function store(Request $request, Bonus $bonus)
     {
-        // Validasi input
+        // validasi
         $validated = $request->validate([
-            'penilaian_id' => 'required|exists:penilaians,id',
-            'karyawan_id'  => 'required|exists:karyawans,id',
-            'jumlah_bonus' => 'required|numeric|min:0',
+            'total_bonus' => 'required|numeric|min:0',
         ]);
 
-        // simpan bonus
-        $bonus = Bonus::create([
-            'penilaian_id' => $validated['penilaian_id'],
-            'karyawan_id'  => $validated['karyawan_id'],
-            'jumlah_bonus' => $validated['jumlah_bonus'],
+        // update data 
+        $bonus->update([
+            'total_bonus' => $validated['total_bonus'],
+            'status_bonus' => 'sudah_di_berikan'
         ]);
 
         return redirect()
             ->route('bonus.index')
-            ->with('success', 'Bonus berhasil disimpan');
+            ->with(
+                'success',
+                'Total bonus berhasil ditambahkan.'
+            );
     }
 
     /**
-     * Display the specified resource.
+     * menampilkan detail id bonus 
      */
     public function show(Bonus $bonus)
     {
@@ -124,26 +145,69 @@ class BonusController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * menampilkan form edit untuk meng update data bonus
      */
     public function edit(Bonus $bonus)
     {
-        //
+        $bonus = Bonus::with([
+            'penilaian.detailPenilaians'
+        ])->findOrFail($bonus->id);
+
+        $bonus->periode_label = Carbon::parse(
+            $bonus->penilaian->periode
+        )->translatedFormat('F Y');
+
+        $bonus->tanggal_penilaian_label = Carbon::parse(
+            $bonus->penilaian->tanggal_penilaian
+        )->translatedFormat('d F Y');
+
+        $bonus->status_perhitungan =
+            $bonus->penilaian->status_perhitungan;
+
+        $bonus->jumlah_karyawan =
+            $bonus->penilaian
+            ->detailPenilaians
+            ->pluck('karyawan_id')
+            ->unique()
+            ->count();
+
+        $bonus->status_bonus =
+            is_null($bonus->total_bonus)
+            ? 'Belum Diberikan'
+            : 'Sudah Diberikan';
+
+        return view(
+            'pages.bonus.edit',
+            compact('bonus')
+        );
     }
 
     /**
-     * Update the specified resource in storage.
+     * update artibut total_bonus menjadi 'total bonus yang di berikan oleh owner' update status_perhitungan dari tabel/model penilaian menjadi 'hitung_ulang_saw' 
      */
     public function update(Request $request, Bonus $bonus)
     {
-        //
-    }
+        // validasi
+        $validated = $request->validate([
+            'total_bonus' => 'required|numeric|min:0',
+        ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Bonus $bonus)
-    {
-        //
+        // update bonus
+        $bonus->update([
+            'total_bonus' => $validated['total_bonus'],
+            'status_bonus' => 'sudah_di_berikan',
+        ]);
+
+        // update status perhitungan penilaian
+        $bonus->penilaian->update([
+            'status_perhitungan' => 'hitung_ulang_saw',
+        ]);
+
+        return redirect()
+            ->route('bonus.index')
+            ->with(
+                'success',
+                'Total bonus berhasil diubah.'
+            );
     }
 }

@@ -97,7 +97,7 @@ Komponen tabel daftar bonus reusable.
                                    bg-ocean/10 text-ocean
                                    font-bold text-sm">
 
-                            {{ $total_karyawan_per_periode ?? '-' }}
+                            {{ $bonus->jumlah_karyawan ?? '-' }}
                         </span>
 
                     </td>
@@ -190,26 +190,26 @@ Komponen tabel daftar bonus reusable.
                     <td class="px-3 py-3.5 no-print">
                         <div class="flex items-center gap-1.5">
 
-                            <a href="{{ route('karyawan.show', $bonus->id) }}"
+                            {{-- <a href="{{ route('bonus.show', $bonus->id) }}"
                                 class="w-8 h-8 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100
                                       flex items-center justify-center transition-colors"
                                 title="Detail">
                                 <i class="fas fa-eye text-xs"></i>
-                            </a>
+                            </a> --}}
 
                             {{-- jika total_bonus null maka tampilkan tombol Tambah Bonus
                             namun jika sudah ada total_bonus maka tampilkan tombol Edit Bonus data total bonus di dapat dari 
                             $bonus->total_bonus yang di kirirm dari controller metod edit --}}
                             @if (is_null($bonus->total_bonus))
                                 {{-- Tambah Bonus --}}
-                                <a href="{{ route('bonus.edit', $bonus->id) }}"
+                                <a href="{{ route('bonus.create', $bonus->id) }}"
                                     class="w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-100
                                             flex items-center justify-center transition-colors"
                                     title="Tambah Bonus">
                                     <i class="fas fa-money-bill-wave text-xs"></i>
                                 </a>
                             @else
-                                {{-- Edit Bonus --}}
+                             
                                 <a href="{{ route('bonus.edit', $bonus->id) }}"
                                     class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100
                                             flex items-center justify-center transition-colors"
@@ -229,18 +229,18 @@ Komponen tabel daftar bonus reusable.
                         <i class="fas fa-users text-5xl text-slate-200 mb-4 block"></i>
 
                         <p class="text-slate-500 font-medium">
-                            Belum ada data karyawan
+                            Belum ada data bonus
                         </p>
 
                         <p class="text-slate-400 text-sm mt-1">
-                            Tambahkan karyawan untuk memulai penilaian
+                            Tambahkan bonus untuk memulai 
                         </p>
 
                         <a href="{{ route('karyawan.create') }}"
                             class="inline-flex items-center gap-2 mt-4 text-teal text-sm font-medium hover:underline">
 
                             <i class="fas fa-plus text-xs"></i>
-                            Tambah karyawan pertama
+                            Tambah bonus pertama
                         </a>
 
                     </td>
