@@ -164,10 +164,6 @@
 
                     {{-- TOTAL BONUS --}}
                     <td class="px-4 py-4">
-                        {{-- Cek status bonus --}}
-                        @php
-                            $status_bonus = $penilaian->status_bonus;
-                        @endphp
 
                         <p class="font-bold text-ocean">
                             {{ $penilaian->total_bonus ? 'Rp ' . number_format($penilaian->total_bonus, 0, ',', '.') : '-' }}
@@ -206,61 +202,49 @@
 
                         <div class="flex items-center justify-center gap-1.5">
 
-                            {{-- DETAIL --}}
-                            <a href="{{ route('penilaian.show', $penilaian->id) }}"
-                                class="w-8 h-8 rounded-lg
-                                       bg-slate-50 text-slate-500
-                                       hover:bg-slate-100
+                            <div class="flex items-center justify-center gap-1.5">
+
+                                {{-- hitung --}}
+                                <a href="{{ route('hitungsaw.show', $penilaian->id) }}"
+                                    class="w-8 h-8 rounded-lg
+                                       bg-green-50 text-green-600
+                                       hover:bg-green-100
                                        transition duration-200
                                        flex items-center justify-center">
 
-                                <i class="fas fa-eye text-xs"></i>
+                                    <i class="fas fa-calculator text-xs"></i>
 
-                            </a>
+                                </a>
 
-                            {{-- EDIT --}}
-                            <a href="{{ route('penilaian.edit', $penilaian->id) }}"
-                                class="w-8 h-8 rounded-lg
+                                {{-- EDIT --}}
+                                <a href="{{ route('penilaian.edit', $penilaian->id) }}"
+                                    class="w-8 h-8 rounded-lg
                                        bg-blue-50 text-blue-600
                                        hover:bg-blue-100
                                        transition duration-200
                                        flex items-center justify-center">
 
-                                <i class="fas fa-pen text-xs"></i>
-
-                            </a>
-
-                            {{-- HASIL --}}
-                            @if ($penilaian->can_show_result)
-                                <a href="{{ route('hasil.show', $penilaian->id) }}"
-                                    class="w-8 h-8 rounded-lg
-                                           bg-teal-50 text-teal-700
-                                           hover:bg-teal-100
-                                           transition duration-200
-                                           flex items-center justify-center">
-
-                                    <i class="fas fa-trophy text-xs"></i>
+                                    <i class="fas fa-pen text-xs"></i>
 
                                 </a>
-                            @endif
 
-                            {{-- DELETE --}}
-                            <button type="button"
-                                onclick="openDeleteModal(
+                                {{-- DELETE --}}
+                                <button type="button"
+                                    onclick="openDeleteModal(
                                     '{{ route('penilaian.destroy', $penilaian->id) }}',
                                     'Periode {{ $penilaian->periode_label }}'
                                 )"
-                                class="w-8 h-8 rounded-lg
+                                    class="w-8 h-8 rounded-lg
                                        bg-red-50 text-red-500
                                        hover:bg-red-100
                                        transition duration-200
                                        flex items-center justify-center">
 
-                                <i class="fas fa-trash text-xs"></i>
+                                    <i class="fas fa-trash text-xs"></i>
 
-                            </button>
+                                </button>
 
-                        </div>
+                            </div>
 
                     </td>
 

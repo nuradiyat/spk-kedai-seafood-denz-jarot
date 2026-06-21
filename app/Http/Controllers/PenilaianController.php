@@ -41,12 +41,13 @@ class PenilaianController extends Controller
                 ->unique()
                 ->count();
 
+            // di ambil dari relasi model penilaian yg berlasi ke model bonus $penilaian->bonus->total_bonus;
+            $penilaian->total_bonus = $penilaian->bonus->total_bonus;
+
             return $penilaian;
         });
 
-        return view(
-            'pages.penilaian.index', compact('penilaians')
-        );
+        return view('pages.penilaian.index', compact('penilaians'));
     }
 
     /**

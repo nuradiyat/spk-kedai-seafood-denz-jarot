@@ -30,18 +30,6 @@ Route      : GET  /penilaian/create → penilaian.create
         </div>
     </div>
 
-    {{-- WARNING --}}
-    {{-- @if ($penilaian->hasilSaws->count() > 0)
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 mb-6">
-            <p class="font-semibold text-amber-800">
-                Data sudah memiliki hasil SAW
-            </p>
-            <p class="text-sm text-amber-700 mt-1">
-                Perubahan nilai akan membuat hasil ranking perlu dihitung ulang.
-            </p>
-        </div>
-    @endif --}}
-
     <form id="formPenilaian" method="POST" action="{{ route('penilaian.store') }}">
         @csrf
 

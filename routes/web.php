@@ -9,6 +9,7 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
+use App\Http\Controllers\HitungSaw;
 use App\Http\Controllers\RiwayatPenilaianController;
 
 
@@ -42,14 +43,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // CRUD PENILAIAN, termasuk proses SAW dan hitung ulang
     Route::resource('penilaian', PenilaianController::class);
+    
+    Route::resource('hitungsaw', HitungSaw::class);
 
     // PROSES SAW
-    Route::post('/penilaian/{penilaian}/proses-saw', [HasilSawController::class, 'proses'])
-        ->name('penilaian.proses');
+    Route::post('/hitungsaw/{penilaian}/proses-saw', [HitungSaw::class, 'prosesPenilaian'])
+        ->name('hitungsaw.proses');
 
     // HITUNG ULANG SAW
-    Route::post('/penilaian/{penilaian}/hitung-ulang', [HasilSawController::class, 'hitungUlang'])
-        ->name('penilaian.hitung-ulang');
+    Route::post('/hitungsaw/{penilaian}/hitung-ulang-saw', [HitungSaw::class, 'prosesUlangPenilaian'])
+        ->name('hitungsaw.hitung-ulang');
 });
 
 // owner only

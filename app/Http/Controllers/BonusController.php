@@ -31,7 +31,8 @@ class BonusController extends Controller
                 $bonus->penilaian->periode
             )->translatedFormat('F Y');
 
-            // cek status perhitungan saw 'sudah_di_hitung', 'belum_di_hitung' atau 'hitung ulang saw'
+            // cek status perhitungan saw 'sudah_di_hitung', 'belum_di_hitung' atau 'hitung ulang saw
+            // dimabil dari tabel penilaian
             $bonus->status_perhitungan = $bonus->penilaian->status_perhitungan;
 
             // bisa pake di views blade pemanggilaan $bonus->jumlah_karyawan untuk menampilkan jumlah karyawan yang dinilai di periode tersebut, karena kita sudah mengambil data detail penilaian dengan with(['penilaian.detailPenilaians']) jadi kita bisa menghitung jumlah karyawan yang dinilai dengan mengambil data detail penilaian lalu pluck('karyawan_id') untuk mengambil id karyawan yang dinilai lalu unique() untuk menghilangkan duplikat id karyawan yang dinilai lalu count() untuk menghitung jumlah karyawan yang dinilai
@@ -54,6 +55,7 @@ class BonusController extends Controller
             return $bonus;
         });
 
+        // card
         $totalBonus = $bonuses->total();
 
         $bonusSudahDiisi = $bonuses
