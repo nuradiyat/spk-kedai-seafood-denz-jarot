@@ -12,8 +12,6 @@ class Penilaian extends Model
         'user_id',
         'periode',
         'tanggal_penilaian',
-        // 'total_bonus',
-        'status_perhitungan',
     ];
 
     /**
@@ -38,17 +36,5 @@ class Penilaian extends Model
     public function hasilSaws(): HasMany
     {
         return $this->hasMany(HasilSaw::class);
-    }
-
-    // relasi bonus
-    public function bonus()
-    {
-        return $this->hasOne(Bonus::class);
-    }
-
-    // relasi riwayat penilaian
-    public function riwayat()
-    {
-        return $this->hasOne(RiwayatPenilaian::class);
     }
 }

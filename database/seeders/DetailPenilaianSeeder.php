@@ -10,23 +10,40 @@ class DetailPenilaianSeeder extends Seeder
     public function run(): void
     {
         DetailPenilaian::insert([
-            // ANDI
-            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>1,'nilai'=>80],
-            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>2,'nilai'=>70],
-            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>3,'nilai'=>90],
-            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>4,'nilai'=>85],
+            // IMEL (ID: 1)
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>1,'nilai'=>5],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>2,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>3,'nilai'=>5],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>4,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>1,'kriteria_id'=>5,'nilai'=>5],
 
-            // BUDI
-            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>1,'nilai'=>60],
-            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>2,'nilai'=>75],
-            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>3,'nilai'=>80],
-            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>4,'nilai'=>70],
+            // RIKI (ID: 2)
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>1,'nilai'=>3],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>2,'nilai'=>2],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>3,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>4,'nilai'=>3],
+            ['penilaian_id'=>1,'karyawan_id'=>2,'kriteria_id'=>5,'nilai'=>3],
 
-            // CITRA
-            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>1,'nilai'=>90],
-            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>2,'nilai'=>85],
-            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>3,'nilai'=>95],
-            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>4,'nilai'=>88],
+            // SARI (ID: 3)
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>1,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>2,'nilai'=>5],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>3,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>4,'nilai'=>5],
+            ['penilaian_id'=>1,'karyawan_id'=>3,'kriteria_id'=>5,'nilai'=>4],
+
+            // ILHAM (ID: 4)
+            ['penilaian_id'=>1,'karyawan_id'=>4,'kriteria_id'=>1,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>4,'kriteria_id'=>2,'nilai'=>3],
+            ['penilaian_id'=>1,'karyawan_id'=>4,'kriteria_id'=>3,'nilai'=>5],
+            ['penilaian_id'=>1,'karyawan_id'=>4,'kriteria_id'=>4,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>4,'kriteria_id'=>5,'nilai'=>4],
+
+            // SINDI (ID: 5)
+            ['penilaian_id'=>1,'karyawan_id'=>5,'kriteria_id'=>1,'nilai'=>3],
+            ['penilaian_id'=>1,'karyawan_id'=>5,'kriteria_id'=>2,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>5,'kriteria_id'=>3,'nilai'=>3],
+            ['penilaian_id'=>1,'karyawan_id'=>5,'kriteria_id'=>4,'nilai'=>4],
+            ['penilaian_id'=>1,'karyawan_id'=>5,'kriteria_id'=>5,'nilai'=>3],
         ]);
     }
 }

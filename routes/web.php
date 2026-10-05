@@ -2,101 +2,151 @@
 
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| CONTROLLERS
+|--------------------------------------------------------------------------
+*/
+
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BonusController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
-use App\Http\Controllers\HitungSaw;
 use App\Http\Controllers\RiwayatPenilaianController;
+/*
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
+*/
 
-
-// ROUTE UNTUK AUTENTIKASI
+/**
+ * =========================================
+ * HALAMAN LOGIN
+ * =========================================
+ */
 Route::get('/', [AuthController::class, 'showLogin'])
     ->name('login');
 
+/**
+ * =========================================
+ * PROSES LOGIN
+ * =========================================
+ */
 Route::post('/login', [AuthController::class, 'login'])
     ->name('login.process');
 
+/**
+ * =========================================
+ * LOGOUT
+ * =========================================
+ */
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
 
-// ROUTE UNTUK DASHBOARD, KARYAWAN, KRITERIA, PENILAIAN, HASIL SAW, RIWAYAT PENILAIAN
-Route::middleware(['auth'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD (SEMUA ROLE)
+|--------------------------------------------------------------------------
+*/
 
+Route::middleware('auth')->group(function () {
+
+    /**
+     * =========================================
+     * DASHBOARD
+     * =========================================
+     */
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 });
 
 
-// ADMIN ONLY
+/*
+|--------------------------------------------------------------------------
+| ADMIN ONLY
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
-    // CRUD KARYAWAN, KRITERIA, PENILAIAN
+    /**
+     * =========================================
+     * DATA KARYAWAN
+     * =========================================
+     */
     Route::resource('karyawan', KaryawanController::class);
 
+    /**
+     * =========================================
+     * KRITERIA & BOBOT
+     * =========================================
+     */
     Route::resource('kriteria', KriteriaController::class);
 
-    // CRUD PENILAIAN, termasuk proses SAW dan hitung ulang
+    /**
+     * =========================================
+     * PENILAIAN
+     * =========================================
+     */
     Route::resource('penilaian', PenilaianController::class);
-    
-    Route::resource('hitungsaw', HitungSaw::class);
-
-    // PROSES SAW
-    Route::post('/hitungsaw/{penilaian}/proses-saw', [HitungSaw::class, 'prosesPenilaian'])
-        ->name('hitungsaw.proses');
-
-    // HITUNG ULANG SAW
-    Route::post('/hitungsaw/{penilaian}/hitung-ulang-saw', [HitungSaw::class, 'prosesUlangPenilaian'])
-        ->name('hitungsaw.hitung-ulang');
-});
-
-// owner only
-Route::middleware(['auth', 'role:owner'])->group(function () {
-
-    Route::get(
-        '/bonus/{bonus}/create',
-        [BonusController::class, 'create']
-    )->name('bonus.tambah');
-    
-
-    Route::resource('bonus', BonusController::class);
 });
 
 
-// ADMIN & OWNER ONLY - HASIL RANKING PER PERIODE, DETAIL HASIL RANKING PER PERIODE
+/*
+|--------------------------------------------------------------------------
+| ADMIN & OWNER
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth', 'role:admin,owner'])->group(function () {
 
-    // HASIL RANKING PER PERIODE
+    /**
+     * =========================================
+     * HASIL SAW
+     * =========================================
+     */
     Route::get('/hasil', [HasilSawController::class, 'index'])
         ->name('hasil.index');
+    Route::get('/hasil-podium', [HasilSawController::class, 'podium'])
+    ->name('hasil.podium');
+    Route::get('/hasil/{penilaian}/export', [HasilSawController::class, 'exportPdf'])
+    ->name('hasil.export');
 
-    // DETAIL HASIL RANKING PER PERIODE
-    Route::get('/hasil/{penilaian}', [HasilSawController::class, 'detail'])
+    /**
+     * =========================================
+     * DETAIL PERHITUNGAN SAW
+     * =========================================
+     */
+    Route::get('/hasil/{penilaian}/detail', [HasilSawController::class, 'detail'])
         ->name('hasil.detail');
-});
 
+    /**
+     * =========================================
+     * PROSES PERHITUNGAN SAW
+     * =========================================
+     */
+    Route::post('/hasil/{penilaian}/proses', [HasilSawController::class, 'proses'])
+        ->name('hasil.proses');
 
-// ADMIN & OWNER ONLY - RIWAYAT PENILAIAN, EXPORT PDF & EXCEL
-Route::middleware(['auth', 'role:admin,owner'])->group(function () {
-
-    // RIWAYAT PENILAIAN PER PERIODE
+    /**
+     * =========================================
+     * RIWAYAT PENILAIAN
+     * =========================================
+     */
     Route::get('/riwayat', [RiwayatPenilaianController::class, 'index'])
         ->name('riwayat.index');
+    Route::get('/riwayat/{penilaian}/export', [RiwayatPenilaianController::class, 'exportPdf'])
+        ->name('riwayat.export');
 
-    // DETAIL RIWAYAT PENILAIAN PER PERIODE
+    /**
+     * =========================================
+     * DETAIL RIWAYAT
+     * =========================================
+     */
     Route::get('/riwayat/{penilaian}', [RiwayatPenilaianController::class, 'detail'])
         ->name('riwayat.detail');
-
-    // EXPORT PDF LAPORAN
-    Route::get('/riwayat/{penilaian}/export-pdf', [RiwayatPenilaianController::class, 'exportPdf'])
-        ->name('riwayat.export-pdf');
-
-    // EXPORT EXCEL LAPORAN
-    Route::get('/riwayat/{penilaian}/export-excel', [RiwayatPenilaianController::class, 'exportExcel'])
-        ->name('riwayat.export-excel');
 });

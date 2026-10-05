@@ -15,13 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('penilaian_id')->constrained()->cascadeOnDelete();
             $table->foreignId('karyawan_id')->constrained()->cascadeOnDelete();
-            $table->decimal('nilai_akhir', 8, 4);
+            $table->float('nilai_akhir');
             $table->integer('ranking');
-            $table->enum('status_bonus', [
-                'layak',
-                'tidak_layak'
-            ])->nullable();
-            $table->decimal('bonus_karyawan', 15, 2)->default(0);
+            $table->string('status_bonus');
             $table->timestamps();
         });
     }

@@ -12,15 +12,9 @@ class KriteriaController extends Controller
      */
     public function index()
     {
-        // ambil semua data kriteria dari database, lalu urutkan berdasarkan id terbaru
-        $kriterias = Kriteria::latest()->get();
+        $kriterias = Kriteria::orderBy('kode', 'asc')->get();
 
-        // ambil varibabel $kriterias lalu jumlahkan semua 
-        // lalu kalikan dengan 100 untuk mendapatkan total bobot dalam persen
-        // yang tadi contoh 0.25 konversi menjadi 25%
-        $totalBobot = $kriterias->sum('bobot') * 100;
-
-        return view('pages.kriteria.index', compact('kriterias', 'totalBobot'));
+        return view('pages.kriteria.index', compact('kriterias'));
     }
 
     /**
@@ -28,13 +22,7 @@ class KriteriaController extends Controller
      */
     public function create()
     {
-        // jumlah total bobot desimal
-        $totalBobot = Kriteria::sum('bobot');
-
-        // konversi sisa ke persen
-        $sisaBobot = (1 - $totalBobot) * 100;
-
-        return view('pages.kriteria.create', compact('sisaBobot'));
+        return view('pages.kriteria.create');
     }
 
     /**
@@ -76,8 +64,6 @@ class KriteriaController extends Controller
         $validated = $request->validate([
             'kode'          => 'required|string|max:10|unique:kriterias,kode,' . $id,
             'nama_kriteria' => 'required|string|max:255',
-            // bobot hanya boleh 0 sampai 1 (min:0|max:1')
-            // contoh: 0.25, 0.50, 1
             'bobot'         => 'required|numeric|min:0|max:1',
             'jenis'         => 'required|in:benefit,cost',
         ]);
