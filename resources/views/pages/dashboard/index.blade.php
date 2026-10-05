@@ -1,243 +1,297 @@
-{{--
-================================================================
-pages/dashboard/index.blade.php
-Halaman dashboard utama SPK.
-Menampilkan: statistik, ranking, bobot kriteria, aktivitas terbaru.
-Controller: DashboardController@index
-================================================================
---}}
 @extends('layouts.app')
 
-@section('title', 'Dashboard — SPK Denz Jarot')
-@section('page-title', 'Dashboard')
-@section('page-subtitle', 'SPK Bonus Karyawan — Denz Jarot Seafood')
+@section('title', 'Dashboard')
 
 @section('content')
+@php
+    $topRanking = collect($topRanking ?? [])->values();
+    $kriteria = collect($kriteria ?? []);
+    $penilaianTerbaru = collect($penilaianTerbaru ?? []);
 
-    {{-- ================================================================
-     BAGIAN 1: KARTU STATISTIK
-================================================================ --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    $isDiterima = fn ($h) => strtolower($h->status_bonus ?? '') === 'diterima';
+    $penerima = $topRanking->filter($isDiterima);
 
-        {{-- Total Karyawan --}}
-        <div
-            class="bg-white rounded-2xl border border-slate-200 p-5 relative overflow-hidden
-                hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-[80px] rounded-tr-2xl bg-ocean opacity-10"></div>
-            <div class="w-10 h-10 rounded-xl bg-ocean/10 text-ocean flex items-center justify-center text-lg mb-4">
-                <i class="fas fa-users"></i>
-            </div>
-            <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Total Karyawan</p>
-            <div class="font-heading font-bold text-ocean text-3xl">{{ $totalKaryawan ?? 0 }}</div>
-            <p class="text-slate-400 text-xs mt-1.5">
-                <span class="text-teal font-semibold">+{{ $karyawanBaru ?? 0 }}</span> bulan ini
-            </p>
-        </div>
+    $totalKaryawan = $totalKaryawan ?? 0;
+    $karyawanAktif = $karyawanAktif ?? $totalKaryawan;
+    $totalKriteria = $totalKriteria ?? $kriteria->count();
+    $totalPenilaian = $totalPenilaian ?? $penilaianTerbaru->count();
+    $penerimaBonus = $penerimaBonus ?? $penerima->count();
 
-        {{-- Penerima Bonus --}}
-        <div
-            class="bg-white rounded-2xl border border-slate-200 p-5 relative overflow-hidden
-                hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-[80px] rounded-tr-2xl bg-teal opacity-10"></div>
-            <div class="w-10 h-10 rounded-xl bg-teal/10 text-teal-700 flex items-center justify-center text-lg mb-4">
-                <i class="fas fa-trophy"></i>
-            </div>
-            <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Penerima Bonus</p>
-            <div class="font-heading font-bold text-ocean text-3xl">{{ $penerimaBonus ?? 0 }}</div>
-            <p class="text-slate-400 text-xs mt-1.5">Periode {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}</p>
-        </div>
+    $totalBobot = (float) $kriteria->sum('bobot');
+    $bobotValid = $kriteria->isNotEmpty() && abs($totalBobot - 1) < 0.0001;
 
-        {{-- totalPenilaian --}}
-        <div
-            class="bg-white rounded-2xl border border-slate-200 p-5 relative overflow-hidden
-                hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-[80px] rounded-tr-2xl bg-coral opacity-10"></div>
-            <div class="w-10 h-10 rounded-xl bg-coral/10 text-coral flex items-center justify-center text-lg mb-4">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Total Penilaian</p>
-            <div class="font-heading font-bold text-ocean text-3xl">
-                {{ $totalPenilaian ?? 0 }}
-            </div>
-            <p class="text-slate-400 text-xs mt-1.5">dalam periode berjalan</p>
-        </div>
+    $periodeAktif = $penilaianTerbaru->first();
+    $namaPeriode = $periodeAktif->periode ?? 'Belum ada periode';
+    $tanggalAktif = $periodeAktif && !empty($periodeAktif->tanggal_penilaian) ? \Carbon\Carbon::parse($periodeAktif->tanggal_penilaian)->translatedFormat('d F Y') : '-';
+    $jumlahDinilai = (int) ($periodeAktif ? $periodeAktif->hasilSaws->count() : $topRanking->count());
 
-        {{-- Penilaian Selesai --}}
-        <div
-            class="bg-white rounded-2xl border border-slate-200 p-5 relative overflow-hidden
-                hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div class="absolute top-0 right-0 w-20 h-20 rounded-bl-[80px] rounded-tr-2xl bg-amber-400 opacity-10"></div>
-            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg mb-4">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Penilaian Selesai</p>
-            <div class="font-heading font-bold text-ocean text-3xl">{{ $persenSelesai ?? 0 }}%</div>
-            <p class="text-slate-400 text-xs mt-1.5">
-                {{ $dinilai ?? 0 }} dari {{ $totalKaryawan ?? 0 }} karyawan
-            </p>
-        </div>
+    $juara = $penerima->first() ?? $topRanking->first();
+    $runnerUp = $topRanking->get(1);
+    $selisih = ($juara && $runnerUp) ? (float) $juara->nilai_akhir - (float) $runnerUp->nilai_akhir : null;
 
-    </div>
+    $diproses = $penilaianTerbaru->filter(fn ($p) => $p->hasilSaws->count() > 0)->count();
+    $persenDiproses = $penilaianTerbaru->count() ? ($diproses / $penilaianTerbaru->count()) * 100 : 0;
 
-    {{-- ================================================================
-     BAGIAN 2: RANKING + BOBOT KRITERIA
-================================================================ --}}
-    <div class="grid grid-cols-1 xl:grid-cols-5 gap-5 mb-5">
+    $bobotShades = ['bg-indigo-600', 'bg-indigo-500', 'bg-indigo-400', 'bg-indigo-300', 'bg-indigo-200'];
 
-        {{-- Tabel Ranking (3/5) --}}
-        <div class="xl:col-span-3 bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div class="flex items-center justify-between px-5 pt-5 pb-3">
-                <h3 class="font-heading font-bold text-ocean text-[15px]">Ranking Karyawan Terbaik</h3>
-                <a href="{{ route('hasil.index') }}"
-                    class="text-xs text-slate-500 border border-slate-200 rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors">
-                    Lihat Semua <i class="fas fa-arrow-right ml-1 text-[10px]"></i>
-                </a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-b border-slate-100">
-                            <th
-                                class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-5 py-3">
-                                #</th>
-                            <th
-                                class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">
-                                Karyawan</th>
-                            <th
-                                class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">
-                                Skor Vi</th>
-                            <th
-                                class="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">
-                                Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    $tahapan = [
+        ['title' => 'Kriteria & bobot', 'desc' => $totalKriteria.' kriteria · total bobot '.number_format($totalBobot, 2), 'done' => $bobotValid],
+        ['title' => 'Input penilaian', 'desc' => $periodeAktif ? $jumlahDinilai.' karyawan telah dinilai' : 'Belum ada periode penilaian', 'done' => (bool) $periodeAktif],
+        ['title' => 'Normalisasi matriks', 'desc' => 'r = x / max(x) untuk kriteria benefit', 'done' => $topRanking->isNotEmpty()],
+        ['title' => 'Perankingan', 'desc' => 'V = Σ w·r · '.$penerima->count().' penerima bonus', 'done' => $topRanking->isNotEmpty()],
+    ];
+    $semuaSelesai = collect($tahapan)->every(fn ($t) => $t['done']);
+
+    $linkCls = 'inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50';
+@endphp
+
+<x-page-header title="Dashboard" :subtitle="'Selamat datang kembali, '.(auth()->user()->name ?? 'Admin').'. Berikut ringkasan penilaian periode '.$namaPeriode.'.'">
+    <x-slot name="actions">
+        <a href="{{ route('hasil.index') }}" class="btn btn-secondary">
+            <x-icon name="chart" class="h-4 w-4 text-slate-500" /> Hasil SAW
+        </a>
+        @if(auth()->user()->role === 'admin')
+        <a href="{{ route('penilaian.create') }}" class="btn btn-primary">
+            <x-icon name="plus" class="h-4 w-4" /> Input Penilaian
+        </a>
+        @endif
+    </x-slot>
+</x-page-header>
+
+{{-- ================= KPI: satu kartu, 4 kolom bersekat ================= --}}
+<div class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-200/70 shadow-[0_1px_3px_rgba(15,23,42,0.04)] xl:grid-cols-4">
+    <x-kpi label="Total Karyawan" :value="$totalKaryawan" unit="orang" icon="users">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+        {{ $karyawanAktif }} karyawan aktif
+    </x-kpi>
+    <x-kpi label="Total Kriteria" :value="$totalKriteria" unit="kriteria" icon="sliders">
+        @if ($bobotValid)
+            <x-icon name="check-circle" class="h-3.5 w-3.5 text-emerald-500" />
+        @else
+            <x-icon name="x-circle" class="h-3.5 w-3.5 text-rose-500" />
+        @endif
+        Total bobot {{ number_format($totalBobot, 2) }}
+    </x-kpi>
+    <x-kpi label="Total Penilaian" :value="$totalPenilaian" unit="periode" icon="clipboard">
+        {{ $periodeAktif ? 'Terakhir '.$tanggalAktif : 'Belum ada penilaian' }}
+    </x-kpi>
+    <x-kpi label="Penerima Bonus" :value="$penerimaBonus" unit="orang" icon="trophy">
+        {{ $penerima->isNotEmpty() ? $penerima->map(fn ($h) => $h->karyawan->nama_karyawan ?? '-')->implode(', ').' · '.$namaPeriode : 'Belum ada penerima' }}
+    </x-kpi>
+</div>
+
+{{-- ================= Ranking + penerima bonus ================= --}}
+<div class="mt-5 grid gap-5 xl:grid-cols-3">
+    <x-card class="overflow-hidden xl:col-span-2">
+        <x-card-header title="Ranking Karyawan" :subtitle="'Hasil perhitungan SAW · '.$namaPeriode">
+            <a href="{{ route('hasil.index') }}" class="{{ $linkCls }}">Lihat semua <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+        </x-card-header>
+        <div class="overflow-x-auto">
+            <table class="tbl min-w-[560px]">
+                <thead class="tbl-head">
+                    <tr>
+                        <th class="tbl-th w-20">Rank</th>
+                        <th class="tbl-th">Karyawan</th>
+                        <th class="tbl-th">Nilai Akhir (V)</th>
+                        <th class="tbl-th text-right">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="tbl-body">
+                    @forelse ($topRanking as $h)
                         @php
-                            $rankBadge = [
-                                1 => 'bg-yellow-100 text-yellow-700',
-                                2 => 'bg-slate-200 text-slate-600',
-                                3 => 'bg-orange-100 text-orange-600',
-                            ];
+                            $rank = (int) ($h->ranking ?? $loop->iteration);
+                            $nilai = (float) ($h->nilai_akhir ?? 0);
                         @endphp
+                        <tr class="tbl-row">
+                            <td class="tbl-td py-4">
+                                <span class="inline-grid h-7 w-7 place-items-center rounded-lg text-xs font-semibold tabular-nums {{ $rank === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500' }}">{{ $rank }}</span>
+                            </td>
+                            <td class="tbl-td py-4">
+                                <div class="flex items-center gap-3">
+                                    <x-avatar :name="$h->karyawan->nama_karyawan ?? '-'" :seed="$h->karyawan->id ?? $loop->iteration" size="sm" />
+                                    <div>
+                                        <p class="font-semibold text-slate-900">{{ $h->karyawan->nama_karyawan ?? '-' }}</p>
+                                        <p class="text-xs text-slate-500">{{ $h->karyawan->jabatan ?? '-' }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="tbl-td w-64 py-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-11 font-semibold tabular-nums text-slate-900">{{ number_format($nilai, 3) }}</span>
+                                    <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                                        <div class="h-full rounded-full {{ $rank === 1 ? 'bg-indigo-600' : 'bg-indigo-200' }}" style="width: {{ min(100, max(0, $nilai * 100)) }}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="tbl-td py-4 text-right">
+                                @if ($isDiterima($h))
+                                    <x-badge tone="emerald" icon="check-circle">Diterima</x-badge>
+                                @else
+                                    <x-badge tone="slate" icon="x-circle">Tidak</x-badge>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-sm text-slate-500">Belum ada hasil perhitungan SAW.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </x-card>
 
-                        @forelse($topRanking ?? [] as $item)
-                            <tr class="border-b border-slate-50 last:border-0 tbl-row">
-                                <td class="px-5 py-3">
-                                    <span
-                                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg
-                                         font-heading font-bold text-[13px]
-                                         {{ $rankBadge[$item->ranking] ?? 'bg-slate-50 text-slate-400' }}">
-                                        {{ $item->ranking }}
-                                    </span>
-                                </td>
-                                <td class="px-3 py-3">
-                                    <div class="flex items-center gap-2.5">
-                                        <span
-                                            class="w-8 h-8 rounded-lg flex items-center justify-center
-                                          text-white text-[11px] font-bold font-heading shrink-0
-                                            bg-gradient-to-br from-ocean to-teal">
-                                            {{ strtoupper(substr($item->karyawan->nama, 0, 2)) }}
-                                        </span>
-                                        <span class="font-semibold text-slate-800">{{ $item->karyawan->nama }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-3 py-3 min-w-[140px]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                            <div class="h-full rounded-full bar {{ $item->ranking <= 4 ? 'bg-teal' : 'bg-purple-300' }}"
-                                                style="width:{{ $item->nilai_akhir * 100 }}%"></div>
-                                        </div>
-                                        <span class="text-xs font-bold text-ocean w-12 text-right">
-                                            {{ number_format($item->nilai_akhir, 4) }}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-3 py-3">
-                                    @include('components.badges.status', [
-                                        'status' => $item->status_bonus == 'Diterima' ? 'bonus' : 'pertimbangan',
-                                    ])
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="py-14 text-center">
-                                    <i class="fas fa-calculator text-4xl text-slate-200 block mb-3"></i>
-                                    <p class="text-slate-400 text-sm">Belum ada hasil perhitungan SAW</p>
-                                    <a href="{{ route('penilaian.create') }}"
-                                        class="text-teal text-sm font-medium mt-2 inline-block hover:underline">
-                                        Mulai penilaian →
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+    <x-card class="p-5 sm:p-6">
+        <div class="flex items-center justify-between gap-3">
+            <h2 class="text-[15px] font-semibold text-slate-900">Penerima Bonus</h2>
+            <span class="text-xs font-medium text-slate-400">{{ $namaPeriode }}</span>
         </div>
 
-        {{-- Bobot Kriteria (2/5) --}}
-        <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 p-5">
-            <h3 class="font-heading font-bold text-ocean text-[15px] mb-4">Bobot Kriteria</h3>
-            @php
-                $palette = ['bg-ocean', 'bg-teal', 'bg-coral', 'bg-blue-400', 'bg-amber-400'];
-            @endphp
-            <div class="space-y-3.5">
-                @forelse($kriterias ?? [] as $idx => $k)
-                    <div class="flex items-center gap-3">
-                        <div class="w-2.5 h-2.5 rounded-sm {{ $palette[$idx % 5] }} shrink-0"></div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-medium text-slate-700 mb-1 truncate">{{ $k->nama }}</p>
-                            <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full rounded-full bar {{ $palette[$idx % 5] }}"
-                                    style="width:{{ $k->bobot }}%"></div>
-                            </div>
-                        </div>
-                        <span class="text-xs font-bold text-slate-600 min-w-[38px] text-right">
-                            {{ $k->bobot * 100 }}%
-                        </span>
+        @if ($juara)
+            <div class="mt-5 grid gap-5 md:grid-cols-3 md:items-center xl:grid-cols-1">
+                <div class="flex items-center gap-3.5">
+                    <x-avatar :name="$juara->karyawan->nama_karyawan ?? '-'" :seed="$juara->karyawan->id ?? 1" size="lg" />
+                    <div class="min-w-0">
+                        <p class="truncate text-base font-semibold text-slate-900">{{ $juara->karyawan->nama_karyawan ?? '-' }}</p>
+                        <p class="truncate text-sm text-slate-500">{{ $juara->karyawan->jabatan ?? 'Karyawan' }}</p>
                     </div>
-                @empty
-                    <p class="text-slate-400 text-xs text-center py-4">Belum ada kriteria</p>
-                @endforelse
-            </div>
-            <div class="mt-5 p-3.5 bg-teal-bg border border-teal-200 rounded-xl">
-                <p class="text-xs font-semibold text-teal-700 mb-1">
-                    <i class="fas fa-info-circle mr-1.5"></i>Metode SAW
-                </p>
-                <p class="text-xs text-slate-500 leading-relaxed">
-                    Normalisasi matriks keputusan kemudian dikalikan bobot tiap kriteria untuk mendapat nilai V<sub>i</sub>.
-                </p>
-            </div>
-        </div>
-
-    </div>
-
-    {{-- ================================================================
-     BAGIAN 3: AKTIVITAS TERBARU
-================================================================ --}}
-    <div class="bg-white rounded-2xl border border-slate-200 p-5">
-        <h3 class="font-heading font-bold text-ocean text-[15px] mb-4">Aktivitas Terbaru</h3>
-        <div class="space-y-2.5">
-            @forelse($aktivitas ?? [] as $act)
-                <div class="flex items-center gap-4 bg-sand rounded-xl px-4 py-3">
-                    <div
-                        class="w-9 h-9 rounded-xl {{ $act->bg_class ?? 'bg-teal-50 text-teal-600' }}
-                        flex items-center justify-center text-sm shrink-0">
-                        <i class="fas {{ $act->icon ?? 'fa-check' }}"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[13px] font-medium text-slate-800 truncate">{{ $act->title }}</p>
-                        <p class="text-[11px] text-slate-400 mt-0.5">{{ $act->time }}</p>
-                    </div>
-                    @include('components.badges.status', ['status' => $act->status ?? 'selesai'])
                 </div>
-            @empty
-                <p class="text-slate-400 text-sm text-center py-8">
-                    <i class="fas fa-clock text-3xl text-slate-200 block mb-2"></i>
-                    Belum ada aktivitas
-                </p>
-            @endforelse
-        </div>
-    </div>
 
+                <div class="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+                    <p class="text-xs font-medium text-slate-500">Nilai akhir (V)</p>
+                    <p class="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-slate-900">{{ number_format((float) $juara->nilai_akhir, 3) }}</p>
+                    @if (! is_null($selisih))
+                        <p class="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                            <x-icon name="trending-up" class="h-3.5 w-3.5" /> +{{ number_format($selisih, 3) }} dari peringkat 2
+                        </p>
+                    @endif
+                </div>
+
+                <div>
+                    <dl class="divide-y divide-slate-100 text-sm">
+                        <div class="flex items-center justify-between gap-3 pb-2.5">
+                            <dt class="text-slate-500">Peringkat</dt>
+                            <dd class="font-medium text-slate-900">#{{ $juara->ranking ?? 1 }} dari {{ $jumlahDinilai }} karyawan</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 py-2.5">
+                            <dt class="text-slate-500">Tanggal</dt>
+                            <dd class="font-medium text-slate-900">{{ $tanggalAktif }}</dd>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 pt-2.5">
+                            <dt class="text-slate-500">Status</dt>
+                            <dd>
+                                @if ($isDiterima($juara))
+                                    <x-badge tone="emerald" icon="check-circle">Diterima</x-badge>
+                                @else
+                                    <x-badge tone="slate" icon="x-circle">Tidak</x-badge>
+                                @endif
+                            </dd>
+                        </div>
+                    </dl>
+                    <a href="{{ route('hasil.podium') }}" class="btn btn-secondary mt-5 h-10 w-full">
+                        <x-icon name="trophy" class="h-4 w-4 text-slate-500" /> Lihat Podium
+                    </a>
+                </div>
+            </div>
+        @else
+            <div class="mt-5 rounded-xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+                Belum ada hasil perhitungan SAW.
+            </div>
+        @endif
+    </x-card>
+</div>
+
+{{-- ================= Bobot + penilaian terbaru + tahapan ================= --}}
+<div class="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+    <x-card class="flex flex-col">
+        <x-card-header title="Bobot Kriteria" :subtitle="$totalKriteria.' kriteria · total bobot '.number_format($totalBobot, 2)">
+            @if(auth()->user()->role === 'admin')
+            <a href="{{ route('kriteria.index') }}" class="{{ $linkCls }}">Kelola <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+            @endif
+        </x-card-header>
+        <div class="p-5 sm:p-6">
+            <div class="flex h-2 gap-0.5 overflow-hidden rounded-full bg-slate-100">
+                @foreach ($kriteria as $k)
+                    <div class="{{ $bobotShades[$loop->index % count($bobotShades)] }}" style="width: {{ (float) $k->bobot * 100 }}%"></div>
+                @endforeach
+            </div>
+            <ul class="mt-5 space-y-3.5">
+                @forelse ($kriteria as $k)
+                    <li class="flex items-center gap-3 text-sm">
+                        <span class="h-2.5 w-2.5 shrink-0 rounded-[3px] {{ $bobotShades[$loop->index % count($bobotShades)] }}"></span>
+                        <span class="w-7 shrink-0 text-xs font-semibold text-slate-400">{{ $k->kode ?? 'C'.$loop->iteration }}</span>
+                        <span class="min-w-0 flex-1 truncate text-slate-700">{{ $k->nama_kriteria ?? '-' }}</span>
+                        <span class="font-semibold tabular-nums text-slate-900">{{ round((float) $k->bobot * 100) }}%</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-slate-500">Belum ada data kriteria.</li>
+                @endforelse
+            </ul>
+        </div>
+    </x-card>
+
+    <x-card class="flex flex-col">
+        <x-card-header title="Penilaian Terbaru" :subtitle="$penilaianTerbaru->count().' periode terakhir'">
+            <a href="{{ route('riwayat.index') }}" class="{{ $linkCls }}">Riwayat <x-icon name="chevron-right" class="h-3.5 w-3.5" /></a>
+        </x-card-header>
+        <ul class="divide-y divide-slate-100">
+            @forelse ($penilaianTerbaru as $p)
+                @php $jumlahHasil = (int) $p->hasilSaws->count(); @endphp
+                <li class="flex items-center gap-3 px-5 py-3.5 sm:px-6">
+                    <x-date-block :date="$p->tanggal_penilaian" />
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-semibold text-slate-900">{{ $p->periode }}</p>
+                        <p class="truncate text-xs text-slate-500">{{ $jumlahHasil }} hasil · oleh {{ $p->user->name ?? 'Admin' }}</p>
+                    </div>
+                    @if ($jumlahHasil > 0)
+                        <x-badge tone="emerald" dot>Selesai</x-badge>
+                    @else
+                        <x-badge tone="amber" dot>Menunggu</x-badge>
+                    @endif
+                </li>
+            @empty
+                <li class="px-6 py-10 text-center text-sm text-slate-500">Belum ada penilaian.</li>
+            @endforelse
+        </ul>
+        <div class="mt-auto border-t border-slate-100 px-5 py-4 sm:px-6">
+            <div class="flex items-center justify-between text-xs">
+                <span class="text-slate-500">Periode sudah diproses</span>
+                <span class="font-semibold tabular-nums text-slate-900">{{ $diproses }} / {{ $penilaianTerbaru->count() }}</span>
+            </div>
+            <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-indigo-600" style="width: {{ $persenDiproses }}%"></div>
+            </div>
+        </div>
+    </x-card>
+
+    <x-card class="flex flex-col md:col-span-2 xl:col-span-1">
+        <x-card-header title="Tahapan SAW" :subtitle="'Status periode '.$namaPeriode">
+            @if ($semuaSelesai)
+                <x-badge tone="emerald" dot>Selesai</x-badge>
+            @else
+                <x-badge tone="amber" dot>Dalam proses</x-badge>
+            @endif
+        </x-card-header>
+        <ol class="grid gap-5 p-5 sm:p-6 md:grid-cols-4 xl:grid-cols-1">
+            @foreach ($tahapan as $t)
+                <li class="relative flex gap-3">
+                    @unless ($loop->last)
+                        <span class="absolute -bottom-5 left-[13.5px] top-8 w-px bg-slate-200 md:hidden xl:block"></span>
+                    @endunless
+                    <span class="relative grid h-7 w-7 shrink-0 place-items-center rounded-full {{ $t['done'] ? 'bg-indigo-600 text-white' : 'border border-slate-300 bg-white text-slate-400' }}">
+                        @if ($t['done'])
+                            <x-icon name="check" class="h-3.5 w-3.5" stroke-width="3" />
+                        @else
+                            <span class="text-xs font-semibold">{{ $loop->iteration }}</span>
+                        @endif
+                    </span>
+                    <div class="min-w-0 pt-0.5">
+                        <p class="text-sm font-semibold text-slate-900">{{ $t['title'] }}</p>
+                        <p class="mt-0.5 text-xs leading-relaxed text-slate-500">{{ $t['desc'] }}</p>
+                    </div>
+                </li>
+            @endforeach
+        </ol>
+    </x-card>
+</div>
 @endsection

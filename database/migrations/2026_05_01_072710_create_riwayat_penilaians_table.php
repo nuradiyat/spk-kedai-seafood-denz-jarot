@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('riwayat_penilaians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('penilaian_id')->constrained()->cascadeOnDelete();
-            $table->string('penanggung_jawab');
-            $table->date('jabatan');
-            $table->string('tdd')->nullable();
+            $table->foreignId('hasil_saw_id')->constrained()->cascadeOnDelete();
+            $table->string('periode');
+            $table->date('tanggal');
+            $table->text('keterangan')->nullable();
             $table->timestamps();
         });
     }

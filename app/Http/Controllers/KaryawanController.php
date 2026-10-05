@@ -8,25 +8,20 @@ use Illuminate\Http\Request;
 class KaryawanController extends Controller
 {
     /**
-     * Tampilkan semua karyawan
+     * Tampilkan semua karyawan dengan fitur pencarian
      */
     public function index(Request $request)
     {
-        $query = Karyawan::query();
+        $search = $request->input('search');
 
-        // 🔍 SEARCH LOGIC
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('nama_karyawan', 'like', '%' . $request->search . '%')
-                    ->orWhere('jabatan', 'like', '%' . $request->search . '%')
-                    ->orWhere('id', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // panggil fungsi $query->latest() akan menggunakan Karyawan::qauery() yang sudah di filter berdasarkan search, 
-        // jadi kalau misalnya search nya kosong maka akan menampilkan semua karyawan, tapi kalau misalnya search
-        // lalu kirimkan data karyawan yang sudah di filter ke view index.blade.php
-        $karyawans = $query->latest()->paginate(10);
+        $karyawans = Karyawan::latest()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_karyawan', 'LIKE', "%{$search}%")
+                      ->orWhere('jabatan', 'LIKE', "%{$search}%");
+                });
+            })
+            ->get();
 
         return view('pages.karyawan.index', compact('karyawans'));
     }
@@ -104,7 +99,6 @@ class KaryawanController extends Controller
      */
     public function destroy($id)
     {
-        // Cari karyawan berdasarkan ID, jika tidak ditemukan maka akan menampilkan error 404
         $karyawan = Karyawan::findOrFail($id);
 
         $karyawan->delete();

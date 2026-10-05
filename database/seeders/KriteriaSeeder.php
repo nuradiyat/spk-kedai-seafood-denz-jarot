@@ -12,7 +12,7 @@ class KriteriaSeeder extends Seeder
         Kriteria::insert([
     [
         'kode' => 'C1',
-        'nama_kriteria' => 'Tingkat kehadiran',
+        'nama_kriteria' => 'Tingkat Kehadiran',
         'bobot' => 0.25,
         'jenis' => 'benefit'
     ],
@@ -24,7 +24,7 @@ class KriteriaSeeder extends Seeder
     ],
     [
         'kode' => 'C3',
-        'nama_kriteria' => 'Kemampuan Bekerja Sama Tim',
+        'nama_kriteria' => 'Kemampuan Kerja Sama Tim',
         'bobot' => 0.20,
         'jenis' => 'benefit'
     ],

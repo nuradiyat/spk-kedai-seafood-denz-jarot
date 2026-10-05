@@ -2,256 +2,207 @@
 
 namespace App\Services;
 
-use App\Models\Penilaian;
+use App\Models\Karyawan;
 use App\Models\Kriteria;
+use App\Models\DetailPenilaian;
 use App\Models\HasilSaw;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
-/**
- * ================================================================
- * SAW Service (Simple Additive Weighting)
- * ================================================================
- * 
- * Menjalankan proses perhitungan SAW untuk menentukan peringkat
- * karyawan berdasarkan kriteria penilaian yang telah ditentukan.
- * 
- * FLOW PROSES:
- * 1. Persiapkan data kriteria dan detail penilaian
- * 2. Bentuk matriks keputusan (nilai karyawan per kriteria)
- * 3. Cari nilai max (benefit) / min (cost) setiap kriteria
- * 4. Normalisasi nilai ke range 0-1
- * 5. Hitung nilai akhir (V) dengan pembobotan
- * 6. Tentukan ranking berdasarkan nilai akhir
- * 7. Simpan hasil ke database
- * ================================================================
- */
 class SAWService
 {
     /**
-     * 📌 Jalankan proses perhitungan SAW lengkap
-     * 
-     * @param Penilaian $penilaian Data penilaian yang akan diproses
-     * @return void
+     * ==========================================
+     * HITUNG SAW + SIMPAN KE DATABASE
+     * ==========================================
      */
-    public function hitung(Penilaian $penilaian): void
+    public function calculate($penilaianId)
     {
-        DB::transaction(function () use ($penilaian) {
-            
-            // 1️⃣ Persiapkan data kriteria dan detail penilaian
-            $kriterias = $this->getKriterias();
-            $details = $this->getDetailPenilaian($penilaian);
+        $data = $this->hitung($penilaianId);
 
-            // 2️⃣ Bentuk matriks keputusan
-            $matrix = $this->buatMatriksKeputusan($details);
+        $ranking = 1;
 
-            // 3️⃣ Cari nilai max/min setiap kriteria
-            $maxMin = $this->cariMaxMin($matrix, $kriterias);
+        foreach ($data['ranking'] as $karyawanId => $nilaiAkhir) {
 
-            // 4️⃣ Normalisasi nilai
-            $normalisasi = $this->normalisasiNilai($matrix, $kriterias, $maxMin);
+            HasilSaw::updateOrCreate(
+                [
+                    'penilaian_id' => $penilaianId,
+                    'karyawan_id' => $karyawanId,
+                ],
+                [
+                    'nilai_akhir' => $nilaiAkhir,
+                    'ranking' => $ranking,
+                    'status_bonus' => $ranking == 1
+                        ? 'Diterima'
+                        : 'Tidak',
+                ]
+            );
 
-            // 5️⃣ Hitung nilai akhir (V)
-            $hasilAkhir = $this->hitungNilaiAkhir($normalisasi, $kriterias);
+            $ranking++;
+        }
 
-            // 6️⃣ Tentukan ranking
-            $hasilRanking = $this->tentukanRanking($hasilAkhir);
-
-            // 7️⃣ Simpan hasil ke database
-            $this->simpanHasil($penilaian, $hasilRanking);
-        });
+        return true;
     }
 
     /**
-     * 📌 Ambil semua kriteria dari database
-     * 
-     * @return Collection
+     * ==========================================
+     * HITUNG METODE SAW
+     * ==========================================
      */
-    private function getKriterias(): Collection
+    public function hitung($penilaianId)
     {
-        return Kriteria::all();
-    }
+        /**
+         * ==========================
+         * AMBIL DATA
+         * ==========================
+         */
+        $karyawans = Karyawan::all();
 
-    /**
-     * 📌 Ambil detail penilaian dengan relasi karyawan dan kriteria
-     * 
-     * @param Penilaian $penilaian
-     * @return Collection
-     */
-    private function getDetailPenilaian(Penilaian $penilaian): Collection
-    {
-        return $penilaian->detailPenilaians()
-            ->with(['karyawan', 'kriteria'])
-            ->get();
-    }
+        $kriterias = Kriteria::all();
 
-    /**
-     * 📌 Bentuk matriks keputusan dari detail penilaian
-     * 
-     * Format: 
-     * [
-     *     karyawan_id => [
-     *         kriteria_id => nilai,
-     *         kriteria_id => nilai,
-     *     ]
-     * ]
-     * 
-     * @param Collection $details
-     * @return array
-     */
-    private function buatMatriksKeputusan(Collection $details): array
-    {
+        /**
+         * ==========================
+         * 1. MATRIX NILAI AWAL
+         * ==========================
+         */
         $matrix = [];
 
-        foreach ($details as $detail) {
-            $matrix[$detail->karyawan_id][$detail->kriteria_id] = $detail->nilai;
+        foreach ($karyawans as $karyawan) {
+
+            foreach ($kriterias as $kriteria) {
+
+                $nilai = DetailPenilaian::where([
+                    'penilaian_id' => $penilaianId,
+                    'karyawan_id' => $karyawan->id,
+                    'kriteria_id' => $kriteria->id,
+                ])->value('nilai');
+
+                $matrix[$karyawan->id][$kriteria->id] = $nilai ?? 0;
+            }
         }
 
-        return $matrix;
-    }
+        /**
+         * ==========================
+         * 2. MAX & MIN
+         * ==========================
+         */
+        $max = [];
 
-    /**
-     * 📌 Cari nilai maksimum (benefit) atau minimum (cost) setiap kriteria
-     * 
-     * Benefit: Semakin tinggi nilai semakin baik (cari max)
-     * Cost: Semakin rendah nilai semakin baik (cari min)
-     * 
-     * @param array $matrix
-     * @param Collection $kriterias
-     * @return array
-     */
-    private function cariMaxMin(array $matrix, Collection $kriterias): array
-    {
-        $maxMin = [];
+        $min = [];
 
         foreach ($kriterias as $kriteria) {
-            
-            // Kumpulkan semua nilai untuk kriteria ini
-            $nilaiKriteria = [];
-            foreach ($matrix as $nilaiPerKaryawan) {
-                $nilaiKriteria[] = $nilaiPerKaryawan[$kriteria->id] ?? 0;
-            }
 
-            // Tentukan nilai referensi (max untuk benefit, min untuk cost)
-            if ($kriteria->jenis === 'benefit') {
-                $maxMin[$kriteria->id] = max($nilaiKriteria);
-            } else {
-                $maxMin[$kriteria->id] = min($nilaiKriteria);
-            }
+            $values = array_column(
+                $matrix,
+                $kriteria->id
+            );
+
+            $max[$kriteria->id] = max($values);
+
+            $min[$kriteria->id] = min($values);
         }
 
-        return $maxMin;
-    }
-
-    /**
-     * 📌 Normalisasi nilai ke range 0-1
-     * 
-     * Formula Benefit: nilai_normal = nilai / nilai_max
-     * Formula Cost: nilai_normal = nilai_min / nilai
-     * 
-     * @param array $matrix
-     * @param Collection $kriterias
-     * @param array $maxMin
-     * @return array
-     */
-    private function normalisasiNilai(array $matrix, Collection $kriterias, array $maxMin): array
-    {
+        /**
+         * ==========================
+         * 3. NORMALISASI
+         * ==========================
+         */
         $normalisasi = [];
 
-        foreach ($matrix as $karyawanId => $nilaiPerKriteria) {
-            
-            foreach ($nilaiPerKriteria as $kriteriaId => $nilai) {
-                
-                $kriteria = $kriterias->where('id', $kriteriaId)->first();
+        foreach ($kriterias as $kriteria) {
 
-                if ($kriteria->jenis === 'benefit') {
-                    // Semakin tinggi semakin baik
-                    $normalisasi[$karyawanId][$kriteriaId] = $nilai / $maxMin[$kriteriaId];
-                } else {
-                    // Semakin rendah semakin baik
-                    $normalisasi[$karyawanId][$kriteriaId] = $maxMin[$kriteriaId] / $nilai;
+            foreach ($karyawans as $karyawan) {
+
+                $value = $matrix[$karyawan->id][$kriteria->id];
+
+                /**
+                 * BENEFIT
+                 */
+                if ($kriteria->jenis == 'benefit') {
+
+                    $normalisasi[$karyawan->id][$kriteria->id] =
+                        $value / ($max[$kriteria->id] ?: 1);
+                }
+
+                /**
+                 * COST
+                 */
+                else {
+
+                    $normalisasi[$karyawan->id][$kriteria->id] =
+                        ($min[$kriteria->id] ?: 1) / ($value ?: 1);
                 }
             }
         }
 
-        return $normalisasi;
-    }
+        /**
+         * ==========================
+         * 4. BOBOT KRITERIA
+         * ==========================
+         */
+        $bobot = [];
 
-    /**
-     * 📌 Hitung nilai akhir (V) dengan pembobotan
-     * 
-     * Formula: V = Σ (nilai_normalisasi × bobot_kriteria)
-     * 
-     * @param array $normalisasi
-     * @param Collection $kriterias
-     * @return array
-     */
-    private function hitungNilaiAkhir(array $normalisasi, Collection $kriterias): array
-    {
-        $hasilAkhir = [];
+        foreach ($kriterias as $kriteria) {
 
-        foreach ($normalisasi as $karyawanId => $nilaiPerKriteria) {
-            
-            $totalNilaiAkhir = 0;
+            $bobot[$kriteria->id] = $kriteria->bobot;
+        }
 
-            foreach ($nilaiPerKriteria as $kriteriaId => $nilaiNormalisasi) {
-                
-                $kriteria = $kriterias->where('id', $kriteriaId)->first();
-                
-                // Kalikan nilai normalisasi dengan bobot kriteria
-                $totalNilaiAkhir += ($nilaiNormalisasi * $kriteria->bobot);
+        /**
+         * ==========================
+         * 5. MATRIX TERBOBOT
+         * ==========================
+         */
+        $terbobot = [];
+
+        foreach ($karyawans as $karyawan) {
+
+            foreach ($kriterias as $kriteria) {
+
+                $terbobot[$karyawan->id][$kriteria->id] =
+                    $normalisasi[$karyawan->id][$kriteria->id]
+                    * $kriteria->bobot;
             }
-
-            $hasilAkhir[$karyawanId] = $totalNilaiAkhir;
         }
 
-        return $hasilAkhir;
-    }
+        /**
+         * ==========================
+         * 6. NILAI AKHIR
+         * ==========================
+         */
+        $nilaiAkhir = [];
 
-    /**
-     * 📌 Tentukan ranking berdasarkan nilai akhir (descending)
-     * 
-     * Ranking 1 = Nilai akhir tertinggi
-     * 
-     * @param array $hasilAkhir
-     * @return array
-     */
-    private function tentukanRanking(array $hasilAkhir): array
-    {
-        // Sort descending (nilai tertinggi di depan)
-        arsort($hasilAkhir);
-        return $hasilAkhir;
-    }
+        foreach ($karyawans as $karyawan) {
 
-    /**
-     * 📌 Simpan hasil perhitungan SAW ke database
-     * 
-     * - Hapus hasil lama terlebih dahulu
-     * - Insert hasil baru dengan ranking dan status bonus
-     * 
-     * @param Penilaian $penilaian
-     * @param array $hasilRanking
-     * @return void
-     */
-    private function simpanHasil(Penilaian $penilaian, array $hasilRanking): void
-    {
-        // Hapus hasil SAW yang sudah ada
-        HasilSaw::where('penilaian_id', $penilaian->id)->delete();
+            $total = array_sum(
+                $terbobot[$karyawan->id]
+            );
 
-        // Simpan hasil SAW baru
-        $ranking = 1;
-        foreach ($hasilRanking as $karyawanId => $nilaiAkhir) {
-            
-            HasilSaw::create([
-                'penilaian_id' => $penilaian->id,
-                'karyawan_id' => $karyawanId,
-                'nilai_akhir' => round($nilaiAkhir, 4),
-                'ranking' => $ranking,
-                'status_bonus' => 'belum_dihitung',
-                'nominal_bonus' => 0,
-            ]);
-
-            $ranking++;
+            $nilaiAkhir[$karyawan->id] = $total;
         }
+
+        /**
+         * ==========================
+         * 7. RANKING
+         * ==========================
+         */
+        arsort($nilaiAkhir);
+
+        $ranking = $nilaiAkhir;
+
+        /**
+         * ==========================
+         * RETURN DATA
+         * ==========================
+         */
+        return [
+            'karyawans'     => $karyawans,
+            'kriterias'     => $kriterias,
+            'nilai_awal'    => $matrix,
+            'max'           => $max,
+            'min'           => $min,
+            'normalisasi'   => $normalisasi,
+            'bobot'         => $bobot,
+            'terbobot'      => $terbobot,
+            'nilai_akhir'   => $nilaiAkhir,
+            'ranking'       => $ranking,
+        ];
     }
 }

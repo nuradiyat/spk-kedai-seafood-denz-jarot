@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Penilaian;
 use App\Models\HasilSaw;
 
@@ -61,5 +62,22 @@ class RiwayatPenilaianController extends Controller
         ])->findOrFail($id);
 
         return view('pages.riwayat.export', compact('penilaian'));
+    }
+
+    public function exportPdf($penilaianId)
+    {
+        $penilaian = Penilaian::with([
+            'hasilSaws.karyawan',
+            'user'
+        ])->findOrFail($penilaianId);
+
+        $pdf = Pdf::loadView(
+            'pages.hasil.export',
+            compact('penilaian')
+        );
+
+        return $pdf->download(
+            'riwayat-penilaian-' . $penilaian->periode . '.pdf'
+        );
     }
 }
