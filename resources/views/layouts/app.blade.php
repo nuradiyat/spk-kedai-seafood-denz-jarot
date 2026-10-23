@@ -64,8 +64,8 @@
                 <x-icon name="fish" class="h-5 w-5" stroke-width="2.25" />
             </span>
             <span class="leading-tight">
-                <span class="block text-base font-extrabold tracking-tight text-slate-900">Denz Jarot</span>
-                <span class="block text-[11px] font-medium text-slate-500">Sistem Pendukung Keputusan</span>
+                <span class="block text-base font-extrabold tracking-tight text-slate-900">SIJAROT</span>
+                <span class="block text-[11px] font-medium text-slate-500">Sistem Pendukung Keputusan · Seafood Denz Jarot</span>
             </span>
         </a>
         <label for="sidebar-toggle" aria-label="Tutup menu"
@@ -124,8 +124,8 @@
             </label>
 
             <div class="md:hidden">
-                <p class="text-sm font-extrabold tracking-tight text-slate-900">Denz Jarot</p>
-                <p class="text-[11px] font-medium text-slate-500">SPK Bonus Karyawan</p>
+                <p class="text-sm font-extrabold tracking-tight text-slate-900">SIJAROT</p>
+                <p class="text-[11px] font-medium text-slate-500">Sistem Pendukung Keputusan · Seafood Denz Jarot</p>
             </div>
 
             {{-- Pencarian: GET ke halaman karyawan (?search=...) jika role admin --}}
@@ -196,7 +196,7 @@
 
     <footer class="px-4 pb-6 sm:px-6 lg:px-8">
         <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-slate-200/70 pt-5 text-xs text-slate-400 sm:flex-row">
-            <p>© {{ date('Y') }} Denz Jarot · Sistem Pendukung Keputusan Bonus Karyawan</p>
+            <p>© 2026 SIJAROT · Sistem Pendukung Keputusan Bonus Karyawan Seafood Denz Jarot</p>
             <p>Metode <span class="font-semibold text-slate-500">Simple Additive Weighting (SAW)</span></p>
         </div>
     </footer>

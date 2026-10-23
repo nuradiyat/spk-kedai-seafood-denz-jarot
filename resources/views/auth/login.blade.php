@@ -25,8 +25,8 @@
                 <x-icon name="fish" class="h-5 w-5" stroke-width="2.25" />
             </span>
             <span class="leading-tight">
-                <span class="block text-base font-extrabold tracking-tight text-slate-900">Denz Jarot</span>
-                <span class="block text-[11px] font-medium text-slate-500">Sistem Pendukung Keputusan</span>
+                <span class="block text-base font-extrabold tracking-tight text-slate-900">SIJAROT</span>
+                <span class="block text-[11px] font-medium text-slate-500">Sistem Pendukung Keputusan · Seafood Denz Jarot</span>
             </span>
         </a>
 
@@ -94,7 +94,7 @@
             </div>
         </div>
 
-        <p class="relative text-xs text-slate-400">© {{ date('Y') }} Denz Jarot · Sistem Pendukung Keputusan Bonus Karyawan</p>
+        <p class="relative text-xs text-slate-400">© 2026 SIJAROT · Sistem Pendukung Keputusan Bonus Karyawan Seafood Denz Jarot</p>
     </div>
 
     {{-- ============================ PANEL VISUAL ============================ --}}
