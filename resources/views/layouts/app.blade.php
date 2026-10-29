@@ -128,11 +128,11 @@
                 <p class="text-[11px] font-medium text-slate-500">Sistem Pendukung Keputusan · Seafood Denz Jarot</p>
             </div>
 
-            {{-- Pencarian: GET ke halaman karyawan (?search=...) jika role admin --}}
+            {{-- Pencarian Terpadu (Global Search) --}}
             @if ($userRole === 'admin')
-            <form method="GET" action="{{ route('karyawan.index') }}" role="search" class="relative hidden w-full max-w-md md:block">
+            <form method="GET" action="{{ route('search') }}" role="search" class="relative hidden w-full max-w-md md:block">
                 <x-icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari karyawan, kriteria, atau periode..."
+                <input type="search" name="q" value="{{ request('q', request('search')) }}" placeholder="Cari karyawan, kriteria, atau periode..."
                        class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-sm text-slate-900 transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100">
             </form>
             @endif

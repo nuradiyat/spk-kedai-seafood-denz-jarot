@@ -25,7 +25,17 @@
 </div>
 
 <x-card class="overflow-hidden">
-    <x-card-header title="Daftar Periode Penilaian" subtitle="Jalankan Proses SAW untuk menghitung ranking pada setiap periode" />
+    <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div>
+            <h2 class="text-[15px] font-semibold text-slate-900">Daftar Periode Penilaian</h2>
+            <p class="mt-0.5 text-xs text-slate-500">Jalankan Proses SAW untuk menghitung ranking pada setiap periode</p>
+        </div>
+        <form method="GET" action="{{ route('penilaian.index') }}" class="relative block w-full sm:w-72">
+            <x-icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari nama periode penilaian..."
+                   class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-3 text-sm text-slate-900 transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100">
+        </form>
+    </div>
     <div class="overflow-x-auto">
         <table class="tbl min-w-[820px]">
             <thead class="tbl-head">
@@ -86,7 +96,17 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-sm text-slate-500">Belum ada data penilaian.</td>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center text-slate-400">
+                                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 ring-1 ring-inset ring-slate-200">
+                                    <x-icon name="search-x" class="h-6 w-6" />
+                                </span>
+                                <p class="mt-3 text-sm font-semibold text-slate-900">Periode tidak ditemukan</p>
+                                <p class="mt-1 text-xs text-slate-500">
+                                    {{ request('search') ? 'Tidak ada periode penilaian yang cocok dengan kata kunci "'.request('search').'".' : 'Belum ada data penilaian.' }}
+                                </p>
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

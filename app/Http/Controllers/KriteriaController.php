@@ -10,9 +10,16 @@ class KriteriaController extends Controller
     /**
      * Tampilkan semua kriteria
      */
-    public function index()
+    public function index(Request $request)
     {
-        $kriterias = Kriteria::orderBy('kode', 'asc')->get();
+        $search = $request->input('search');
+
+        $kriterias = Kriteria::when($search, function ($query, $search) {
+                $query->where('kode', 'LIKE', "%{$search}%")
+                      ->orWhere('nama_kriteria', 'LIKE', "%{$search}%");
+            })
+            ->orderBy('kode', 'asc')
+            ->get();
 
         return view('pages.kriteria.index', compact('kriterias'));
     }

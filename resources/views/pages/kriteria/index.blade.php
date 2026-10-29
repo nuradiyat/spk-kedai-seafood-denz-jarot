@@ -5,11 +5,12 @@
 @section('content')
 @php
     $kriteria = collect($kriterias ?? $kriteria ?? []);
-    $totalBobot = (float) $kriteria->sum('bobot');
+    $semuaKriteria = request('search') ? \App\Models\Kriteria::orderBy('kode', 'asc')->get() : $kriteria;
+    $totalBobot = (float) $semuaKriteria->sum('bobot');
     $bobotValid = abs($totalBobot - 1) < 0.0001;
     $isBenefit = fn ($k) => strtolower($k->jenis ?? 'benefit') === 'benefit';
-    $jumlahBenefit = $kriteria->filter($isBenefit)->count();
-    $jumlahCost = $kriteria->count() - $jumlahBenefit;
+    $jumlahBenefit = $semuaKriteria->filter($isBenefit)->count();
+    $jumlahCost = $semuaKriteria->count() - $jumlahBenefit;
 
     $barTones = ['bg-indigo-500', 'bg-sky-500', 'bg-emerald-500', 'bg-amber-400', 'bg-rose-400'];
     $chipTones = [
@@ -45,7 +46,7 @@
         </div>
 
         <div class="mt-5 flex h-4 gap-1 overflow-hidden rounded-full bg-slate-100">
-            @foreach ($kriteria as $k)
+            @foreach ($semuaKriteria as $k)
                 <div title="{{ $k->kode }} · {{ $k->nama_kriteria }}"
                      class="h-full first:rounded-l-full last:rounded-r-full {{ $barTones[$loop->index % 5] }}"
                      style="width: {{ (float) $k->bobot * 100 }}%"></div>
@@ -53,7 +54,7 @@
         </div>
 
         <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            @foreach ($kriteria as $k)
+            @foreach ($semuaKriteria as $k)
                 <div class="rounded-xl border border-slate-100 bg-slate-50/60 p-3">
                     <div class="flex items-center gap-2">
                         <span class="h-2.5 w-2.5 rounded-full {{ $barTones[$loop->index % 5] }}"></span>
@@ -72,7 +73,7 @@
         <dl class="mt-4 space-y-3 text-sm">
             <div class="flex items-center justify-between">
                 <dt class="text-slate-500">Jumlah Kriteria</dt>
-                <dd class="font-semibold text-slate-900">{{ $kriteria->count() }} kriteria</dd>
+                <dd class="font-semibold text-slate-900">{{ $semuaKriteria->count() }} kriteria</dd>
             </div>
             <div class="flex items-center justify-between">
                 <dt class="text-slate-500">Total Bobot</dt>
@@ -98,7 +99,17 @@
 
 {{-- Tabel --}}
 <x-card class="mt-5 overflow-hidden">
-    <x-card-header title="Daftar Kriteria" :subtitle="$kriteria->count().' kriteria digunakan dalam perhitungan SAW'" />
+    <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div>
+            <h2 class="text-[15px] font-semibold text-slate-900">Daftar Kriteria</h2>
+            <p class="mt-0.5 text-xs text-slate-500">{{ $kriteria->count() }} kriteria digunakan dalam perhitungan SAW</p>
+        </div>
+        <form method="GET" action="{{ route('kriteria.index') }}" class="relative block w-full sm:w-72">
+            <x-icon name="search" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kode atau nama kriteria..."
+                   class="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-3 text-sm text-slate-900 transition placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100">
+        </form>
+    </div>
     <div class="overflow-x-auto">
         <table class="tbl min-w-[720px]">
             <thead class="tbl-head">
@@ -141,7 +152,17 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-500">Belum ada data kriteria.</td>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center text-slate-400">
+                                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-slate-50 ring-1 ring-inset ring-slate-200">
+                                    <x-icon name="search-x" class="h-6 w-6" />
+                                </span>
+                                <p class="mt-3 text-sm font-semibold text-slate-900">Kriteria tidak ditemukan</p>
+                                <p class="mt-1 text-xs text-slate-500">
+                                    {{ request('search') ? 'Tidak ada kriteria yang cocok dengan kata kunci "'.request('search').'".' : 'Belum ada data kriteria.' }}
+                                </p>
+                            </div>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

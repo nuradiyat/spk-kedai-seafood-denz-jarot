@@ -41,6 +41,7 @@ class HasilSawController extends Controller
 
         if (!$periode) {
             $hasil = collect();
+            $radarData = null;
         } else {
             $hasil = HasilSaw::with([
                 'karyawan',
@@ -49,9 +50,45 @@ class HasilSawController extends Controller
                 ->where('penilaian_id', $periode->id)
                 ->orderBy('ranking', 'asc')
                 ->get();
+
+            // Ambil data detail untuk Radar Chart
+            $detailSaw = $this->saw->hitung($periode->id);
+            $radarLabels = $detailSaw['kriterias']->map(fn ($c) => $c->kode . ' - ' . $c->nama_kriteria)->values();
+            $palette = [
+                ['border' => 'rgb(79, 70, 229)', 'bg' => 'rgba(79, 70, 229, 0.2)'],   // Indigo
+                ['border' => 'rgb(16, 185, 129)', 'bg' => 'rgba(16, 185, 129, 0.2)'], // Emerald
+                ['border' => 'rgb(245, 158, 11)', 'bg' => 'rgba(245, 158, 11, 0.2)'], // Amber
+                ['border' => 'rgb(14, 165, 233)', 'bg' => 'rgba(14, 165, 233, 0.2)'], // Sky
+                ['border' => 'rgb(244, 63, 94)', 'bg' => 'rgba(244, 63, 94, 0.2)'],   // Rose
+            ];
+
+            $radarDatasets = [];
+            foreach ($hasil as $idx => $h) {
+                $color = $palette[$idx % count($palette)];
+                $dataPoints = [];
+                foreach ($detailSaw['kriterias'] as $c) {
+                    $norm = (float) ($detailSaw['normalisasi'][$h->karyawan_id][$c->id] ?? 0);
+                    $dataPoints[] = round($norm, 3);
+                }
+
+                $radarDatasets[] = [
+                    'label' => $h->karyawan->nama_karyawan ?? 'Karyawan',
+                    'data' => $dataPoints,
+                    'borderColor' => $color['border'],
+                    'backgroundColor' => $color['bg'],
+                    'borderWidth' => 2,
+                    'pointBackgroundColor' => $color['border'],
+                    'pointRadius' => 4,
+                ];
+            }
+
+            $radarData = [
+                'labels' => $radarLabels,
+                'datasets' => $radarDatasets,
+            ];
         }
 
-        return view('pages.hasil.index', compact('hasil', 'periode', 'daftarPeriode'));
+        return view('pages.hasil.index', compact('hasil', 'periode', 'daftarPeriode', 'radarData'));
     }
 
     /**
@@ -149,5 +186,23 @@ class HasilSawController extends Controller
         return $pdf->download(
             'hasil-saw-'.$penilaian->periode.'.pdf'
         );
+    }
+
+    /**
+     * 📌 Simulasi & Analisis Sensitivitas Bobot
+     */
+    public function sensitivitas($id)
+    {
+        $penilaian = Penilaian::findOrFail($id);
+        $detailSaw = $this->saw->hitung($penilaian->id);
+
+        return view('pages.hasil.sensitivitas', [
+            'penilaian'      => $penilaian,
+            'kriterias'      => $detailSaw['kriterias'],
+            'karyawans'      => $detailSaw['karyawans'],
+            'normalisasi'    => $detailSaw['normalisasi'],
+            'rankingAwal'    => $detailSaw['ranking'],
+            'nilaiAkhirAwal' => $detailSaw['nilai_akhir'],
+        ]);
     }
 }

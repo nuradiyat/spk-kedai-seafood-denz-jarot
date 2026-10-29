@@ -89,19 +89,52 @@
             </div>
         </x-card>
 
-        <x-card class="flex flex-col justify-center p-6">
-            <span class="grid h-11 w-11 place-items-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
-                <x-icon name="info" class="h-5 w-5" />
-            </span>
-            <h3 class="mt-4 font-bold text-slate-900">Rumus Normalisasi Matriks</h3>
-            <p class="mt-2 text-xs leading-relaxed text-slate-600">
-                <b>Benefit:</b> \( r_{ij} = \frac{x_{ij}}{\max(x_{ij})} \)<br>
-                <i>(Nilai dibagi Nilai Maksimal)</i>
-            </p>
-            <p class="mt-2 text-xs leading-relaxed text-slate-600">
-                <b>Cost:</b> \( r_{ij} = \frac{\min(x_{ij})}{x_{ij}} \)<br>
-                <i>(Nilai Minimal dibagi Nilai)</i>
-            </p>
+        <x-card class="flex flex-col justify-between p-5 sm:p-6">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+                        <x-icon name="calculator" class="h-5 w-5" />
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Rumus Normalisasi Matriks</h3>
+                        <p class="text-[11px] text-slate-500">Aturan perbandingan nilai ekstrem SAW</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 space-y-3">
+                    {{-- Benefit --}}
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+                        <div class="flex items-center justify-between">
+                            <x-badge tone="emerald" icon="trending-up">Benefit</x-badge>
+                            <span class="text-[11px] font-semibold text-emerald-800">Kriteria Keuntungan</span>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-800">
+                            Nilai Karyawan &divide; Nilai Max
+                        </p>
+                        <p class="mt-0.5 text-[11px] text-slate-500">
+                            Semakin besar nilai, semakin tinggi hasil normalisasinya.
+                        </p>
+                    </div>
+
+                    {{-- Cost --}}
+                    <div class="rounded-xl border border-rose-100 bg-rose-50/60 p-3">
+                        <div class="flex items-center justify-between">
+                            <x-badge tone="rose" icon="trending-down">Cost</x-badge>
+                            <span class="text-[11px] font-semibold text-rose-800">Kriteria Biaya</span>
+                        </div>
+                        <p class="mt-2 text-xs font-bold text-slate-800">
+                            Nilai Min &divide; Nilai Karyawan
+                        </p>
+                        <p class="mt-0.5 text-[11px] text-slate-500">
+                            Semakin kecil nilai, semakin tinggi hasil normalisasinya.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 rounded-lg bg-slate-50 p-2.5 text-center text-[11px] text-slate-500">
+                Nilai normalisasi bernilai antara <span class="font-bold text-slate-700">0.000</span> s/d <span class="font-bold text-slate-700">1.000</span>.
+            </div>
         </x-card>
     </div>
 

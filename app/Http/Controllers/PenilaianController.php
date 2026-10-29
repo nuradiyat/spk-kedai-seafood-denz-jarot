@@ -13,9 +13,14 @@ class PenilaianController extends Controller
     /**
      * 📌 Tampilkan semua penilaian beserta hasil SAW terkait
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $penilaians = Penilaian::with(['user', 'hasilSaws'])
+            ->when($search, function ($query, $search) {
+                $query->where('periode', 'LIKE', "%{$search}%");
+            })
             ->latest()
             ->get();
 

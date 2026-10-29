@@ -15,6 +15,7 @@ use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\PenilaianController;
 use App\Http\Controllers\HasilSawController;
 use App\Http\Controllers\RiwayatPenilaianController;
+use App\Http\Controllers\SearchController;
 /*
 |--------------------------------------------------------------------------
 | AUTH
@@ -62,6 +63,14 @@ Route::middleware('auth')->group(function () {
      */
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    /**
+     * =========================================
+     * PENCARIAN TERPADU (GLOBAL SEARCH)
+     * =========================================
+     */
+    Route::get('/search', [SearchController::class, 'index'])
+        ->name('search');
 });
 
 
@@ -115,6 +124,8 @@ Route::middleware(['auth', 'role:admin,owner'])->group(function () {
     ->name('hasil.podium');
     Route::get('/hasil/{penilaian}/export', [HasilSawController::class, 'exportPdf'])
     ->name('hasil.export');
+    Route::get('/hasil/{penilaian}/sensitivitas', [HasilSawController::class, 'sensitivitas'])
+    ->name('hasil.sensitivitas');
 
     /**
      * =========================================

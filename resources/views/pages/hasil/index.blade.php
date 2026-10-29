@@ -30,6 +30,11 @@
                 <button type="submit" class="btn btn-secondary px-3.5">Tampilkan</button>
             </form>
         @endif
+        @if (isset($periode->id) && $hasil->isNotEmpty())
+            <a href="{{ route('hasil.sensitivitas', $periode->id) }}" class="btn btn-secondary">
+                <x-icon name="sliders" class="h-4 w-4 text-indigo-500" /> Analisis Sensitivitas
+            </a>
+        @endif
         <a href="{{ route('hasil.podium') }}" class="btn btn-gold">
             <x-icon name="trophy" class="h-4 w-4" /> Lihat Podium
         </a>
@@ -126,6 +131,122 @@
         </div>
     @endif
 </x-card>
+
+@if ($radarData && count($radarData['datasets']) > 0)
+<div class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-12">
+    <x-card class="overflow-hidden p-5 sm:p-6 lg:col-span-8">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-[15px] font-semibold text-slate-900">Visualisasi Multi-Kriteria (Radar Chart)</h2>
+                <p class="mt-0.5 text-xs text-slate-500">Perbandingan performa rating ternormalisasi karyawan pada kriteria C1–C5</p>
+            </div>
+            <x-badge tone="indigo" icon="chart">Skala 0.0 – 1.0</x-badge>
+        </div>
+
+        <div class="relative mt-4 flex items-center justify-center min-h-[340px]">
+            <canvas id="radarChart"></canvas>
+        </div>
+        <p class="mt-3 text-center text-xs text-slate-400">
+            Klik nama karyawan pada legenda di atas grafik untuk menyembunyikan atau menampilkan perbandingan.
+        </p>
+    </x-card>
+
+    <x-card class="flex flex-col justify-between p-5 sm:p-6 lg:col-span-4">
+        <div>
+            <div class="flex items-center gap-2.5">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-50 text-indigo-600 ring-1 ring-inset ring-indigo-100">
+                    <x-icon name="trophy" class="h-4 w-4" />
+                </span>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">Analisis Komparatif</h3>
+                    <p class="text-[11px] text-slate-500">Kekuatan Karyawan Unggulan</p>
+                </div>
+            </div>
+
+            <div class="mt-4 space-y-3">
+                @foreach ($hasil->take(3) as $top)
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-900">Rank #{{ $top->ranking }}: {{ $top->karyawan->nama_karyawan }}</span>
+                            <span class="font-mono text-xs font-semibold text-indigo-600">{{ number_format($top->nilai_akhir, 3) }}</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-slate-500">
+                            @if ($loop->iteration === 1)
+                                Memiliki keunggulan dominan pada kriteria kehadiran & konsistensi kerja.
+                            @elseif ($loop->iteration === 2)
+                                Menunjukkan performa sangat tinggi pada kriteria produktivitas kerja.
+                            @else
+                                Menunjukkan kontribusi stabil dan kerja sama tim yang solid.
+                            @endif
+                        </p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        @if (isset($periode->id))
+            <a href="{{ route('hasil.sensitivitas', $periode->id) }}" class="btn btn-secondary mt-4 w-full justify-center">
+                <x-icon name="sliders" class="h-4 w-4 text-indigo-600" /> Uji Sensitivitas Bobot &rarr;
+            </a>
+        @endif
+    </x-card>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('radarChart');
+        if (!ctx) return;
+
+        const radarData = @json($radarData);
+
+        new Chart(ctx, {
+            type: 'radar',
+            data: radarData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 1.0,
+                        ticks: {
+                            stepSize: 0.2,
+                            backdropColor: 'transparent',
+                            color: '#64748b',
+                            font: { size: 10 }
+                        },
+                        grid: { color: 'rgba(226, 232, 240, 0.8)' },
+                        angleLines: { color: 'rgba(226, 232, 240, 0.8)' },
+                        pointLabels: {
+                            color: '#334155',
+                            font: { size: 11, weight: '600' }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 14,
+                            color: '#334155',
+                            font: { size: 12, weight: '500' }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + Number(context.raw).toFixed(3);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+@endif
 
 <div class="mt-5 grid gap-5 md:grid-cols-2">
     <x-card class="flex gap-4 p-5">

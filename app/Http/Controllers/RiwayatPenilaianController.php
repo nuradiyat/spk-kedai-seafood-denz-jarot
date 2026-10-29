@@ -5,18 +5,24 @@ namespace App\Http\Controllers;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Penilaian;
 use App\Models\HasilSaw;
+use Illuminate\Http\Request;
 
 class RiwayatPenilaianController extends Controller
 {
     /**
      * 📌 Tampilkan seluruh riwayat penilaian
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+
         $penilaians = Penilaian::with([
             'user',
             'hasilSaws'
         ])
+            ->when($search, function ($query, $search) {
+                $query->where('periode', 'LIKE', "%{$search}%");
+            })
             ->latest()
             ->get();
 
